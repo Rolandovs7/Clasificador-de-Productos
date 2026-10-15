@@ -1,5 +1,0 @@
-services:
-  reciclapp:
-    build: .
-    ports:
-      - "5000:5000"

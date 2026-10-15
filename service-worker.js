@@ -4,13 +4,12 @@
  * y los CDN se reutilizan si ya se visitaron.
  * model.json y los dos .bin ya están entrenados y entran en la carcasa.
  */
-const SHELL_CACHE = "botellas-shell-v8";
+const SHELL_CACHE = "botellas-shell-v9";
 const EXTERNAL_CACHE = "botellas-external-v1";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
-  "./cuaderno/Clasificador_de_botellas.html",
   "./assets/botellas.svg",
   "./assets/icono.png",
   "./assets/icon-pwa.svg",
