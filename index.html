@@ -1791,7 +1791,7 @@
           }
         }
 
-        /* La red propia (modelo_botellas) solo revisa la clase Botella. */
+        /* La red propia (modelo) solo revisa la clase Botella. */
         async function confirmarCajas(source, cajas) {
           if (!model || !cajas.length) return cajas;
           const aceptadas = [];
@@ -2145,11 +2145,11 @@
             bottleDetector = await cocoSsd.load({ base: "mobilenet_v2" });
             model = null;
             try {
-              const pesos = await fetch("./modelo_botellas/group1-shard1of2.bin", {
+              const pesos = await fetch("./modelo/group1-shard1of2.bin", {
                 method: "HEAD",
                 signal: AbortSignal.timeout(2500)
               });
-              if (pesos.ok) model = await tf.loadLayersModel("./modelo_botellas/model.json");
+              if (pesos.ok) model = await tf.loadLayersModel("./modelo/model.json");
             } catch (error) {
               console.warn("La red propia todavía no tiene pesos exportados:", error);
               model = null;

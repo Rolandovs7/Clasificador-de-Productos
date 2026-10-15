@@ -1,97 +1,137 @@
 # Clasificador
 
-Cuenta productos con la cámara, una foto o un video, los guarda en un inventario por categoría de este navegador y busca basureros cerca. Las imágenes no salen del dispositivo.
+Clasificador de productos con inventario automático, que se ejecuta íntegramente en el navegador.
 
-Es un sitio estático: no necesita servidor, base de datos ni Python. Todo corre en el navegador (`index.html`).
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](#)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](#)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](#)
+[![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-FF6F00?logo=tensorflow&logoColor=white)](#)
+[![PWA](https://img.shields.io/badge/PWA-instalable-5A0FC8?logo=pwa&logoColor=white)](#)
+[![Estado](https://img.shields.io/badge/estado-listo-2DD4A0)](#)
 
-## Estructura de la interfaz
+<p align="center">
+  <img src="assets/logo-hero.png" alt="Clasificador" width="420">
+</p>
 
-Tres secciones en un mismo panel:
+## Capturas
 
-- **Escáner**: visor de cámara, foto o video con las cajas dibujadas encima, un contador en vivo y contadores por categoría.
-- **Inventario**: tarjetas de resumen, gráficos por categoría y la lista de registros, con búsqueda, filtro por categoría y exportación a JSON y CSV.
-- **Mapa**: basureros y puntos de reciclaje cercanos (Leaflet + OpenStreetMap).
+Interfaz en tema oscuro (arriba) y tema claro (abajo).
 
-En móvil hay una barra inferior con las tres pestañas. En escritorio, una barra lateral con el mismo menú. El botón de ajustes (⚙) abre la lista de categorías y la sensibilidad.
+| Vista | Oscuro | Claro |
+|---|---|---|
+| Escáner | <img src="docs/capturas/escaner-oscuro.png" alt="Escáner en tema oscuro" width="440"> | <img src="docs/capturas/escaner-claro.png" alt="Escáner en tema claro" width="440"> |
+| Inventario | <img src="docs/capturas/inventario-oscuro.png" alt="Inventario en tema oscuro" width="440"> | <img src="docs/capturas/inventario-claro.png" alt="Inventario en tema claro" width="440"> |
+| Mapa | <img src="docs/capturas/mapa-oscuro.png" alt="Mapa en tema oscuro" width="440"> | <img src="docs/capturas/mapa-claro.png" alt="Mapa en tema claro" width="440"> |
 
-## Cómo ejecutarlo
+> Las capturas del inventario usan datos de ejemplo sembrados a propósito. La del mapa muestra
+> Berlín con 56 puntos reales de OpenStreetMap (45 basureros y 11 puntos de reciclaje).
 
-Desde la raíz del proyecto:
+## Qué hace
 
-```bash
-python -m http.server 8765
-```
+- Detección de hasta **80 tipos de objeto** con IA (COCO-SSD), por cámara, foto o video.
+- **Conteo por categoría**: cada objeto cuenta por separado y no se vuelve a registrar mientras siga a la vista.
+- **Inventario con historial** por categoría, con la cantidad editable y la confianza de cada registro.
+- **Categorías configurables** y **sensibilidad ajustable** desde Ajustes (qué detectar y cuán estricto ser).
+- **Exportación** del inventario a **CSV** y **JSON**.
+- **Mapa** de basureros y puntos de reciclaje cercanos (1200 m).
+- **Tema claro/oscuro**.
+- **Instalable como PWA** y con **uso sin conexión** tras la primera carga.
 
-Abre http://127.0.0.1:8765 . Si el puerto está ocupado, cambia el número. No abras `index.html` con doble clic: la cámara, la geolocalización y el service worker necesitan `http://` (o `https://`).
+## Cómo funciona
 
-## Cómo se usa
+1. El usuario apunta con la **cámara**, sube una **foto** o un **video**.
+2. **COCO-SSD** (sobre TensorFlow.js) dibuja las cajas y clasifica cada objeto en su categoría.
+3. Un **rastreo anti-duplicado por categoría** compara las cajas entre pasadas (solapamiento IoU ≥ 0.45)
+   y exige ver el objeto dos veces seguidas en cámara antes de contarlo, para no repetir el mismo producto.
+4. Cada registro se guarda en el **inventario del navegador** (`localStorage`), con fecha, categoría,
+   cantidad y confianza.
+5. La app incluye además una **red propia** entrenada en `modelo/` que actúa como confirmación extra
+   para la clase **Botella** (entrada gris de 100×100). Si los pesos no están disponibles, la app sigue
+   funcionando solo con COCO-SSD.
 
-1. **Cámara** cuenta sola. **Foto** acepta JPG, PNG, WEBP o GIF, hasta 12 MB. **Video** acepta MP4, WEBM o QuickTime.
-2. Detecta varias categorías a la vez (hasta 80 clases de COCO-SSD, 16 activas por defecto). Cada categoría se cuenta por separado y la misma no se vuelve a guardar mientras siga a la vista.
-3. **Registrar ahora** fuerza el registro. **Nueva toma** permite contar otra vez los productos de esta toma.
-4. En la imagen se dibujan las cajas con el color e icono de cada categoría. Por debajo del 60 % el resultado se marca como poco seguro.
-5. **Agregar producto** añade una categoría y una cantidad a mano, sin cámara.
-6. En **Ajustes** eliges qué categorías detectar y la sensibilidad mínima (más baja detecta más pero puede equivocarse).
+## Privacidad
 
-Solo se detecta la clase `bottle` con la red propia. Si están los pesos en `modelo_botellas/`, esa red confirma el recorte de botella.
+Las imágenes se procesan **en el equipo** y no se envían a ningún servidor. El inventario vive en el
+`localStorage` del navegador. La única conexión que sale a internet (aparte de cargar las librerías) es
+la del **mapa**: la ciudad o dirección que escribas se consulta a OpenStreetMap para localizar los puntos
+cercanos.
 
-El inventario v2 queda en el navegador (`clasificador-inventario-v2`): totales por categoría y una lista de registros con fecha, clase, categoría, cantidad editable, confianza y cajas. Se puede borrar una fila, vaciar todo, o descargar JSON y CSV. Si existe el inventario antiguo (`botellas-ia-inventario-v1`) se importa como Botella sin borrarlo.
+## Tecnologías
 
-En el mapa, **Mi ubicación** o una ciudad buscan en 1200 m. Amarillo es basurero, verde es contenedor y azul es punto de reciclaje. Esa búsqueda sí usa internet. Las fotos no se envían.
-
-## Autoría y pie de página
-
-El nombre y la materia del autor se editan en un solo sitio: la constante `PIE_INFO` al final de `index.html`.
-
-```js
-const PIE_INFO = { autor: "Rolando Velasco Soliz", materia: "INF432" };
-```
+- **TensorFlow.js** 4.22.0 y **COCO-SSD** 2.2.3 para la detección de objetos en el navegador.
+- **Leaflet** 1.9.4 con datos de **OpenStreetMap** (**Overpass** para los puntos y **Nominatim** para geocodificar).
+- **Boxicons** 2.1.4 para los iconos.
+- **Google Fonts** (Space Grotesk e Inter) para la tipografía.
 
 ## Estructura del proyecto
 
 ```
-index.html            Escáner, inventario y mapa (todo el panel)
-styles.css            Estilos (tema oscuro, variables en :root)
-js/categorias.js      Catálogo de 80 categorías (nombre, icono, color, activa)
-js/mapa.js            Mapa (Leaflet + OpenStreetMap)
-assets/               Logotipo, ícono PWA e imágenes
-modelo_botellas/      Red propia de TensorFlow.js (model.json + 2 .bin)
-manifest.webmanifest  Datos de la PWA
-service-worker.js     Caché para uso sin conexión
+Clasificador/
+├── index.html               Página única con las tres vistas (Escáner, Inventario y Mapa)
+├── styles.css               Estilos y variables de tema (oscuro/claro)
+├── service-worker.js        Caché para el uso sin conexión
+├── manifest.webmanifest     Metadatos de la PWA (nombre, iconos, colores)
+├── README.md                Este documento
+├── assets/                  Logotipo, iconos de la PWA y favicon
+│   ├── logo.png
+│   ├── logo-hero.png
+│   ├── icono.png
+│   ├── icon-192.png
+│   ├── icon-maskable-512.png
+│   └── favicon.png
+├── js/
+│   ├── categorias.js        Catálogo de las 80 categorías (nombre, icono, color, activa)
+│   └── mapa.js              Mapa: varios servidores Overpass, reintentos y caché por zona
+├── modelo/                  Red propia de TensorFlow.js (confirmación de Botella)
+│   ├── model.json           Arquitectura + manifiesto de pesos
+│   ├── group1-shard1of2.bin Pesos (parte 1)
+│   └── group1-shard2of2.bin Pesos (parte 2)
+└── docs/
+    └── capturas/            Capturas de pantalla usadas en este README
 ```
 
-El dataset, los cuadernos y el script de entrenamiento se movieron fuera del proyecto, a `../clasificador-datos/`, por su tamaño.
+El conjunto de datos y el script de entrenamiento de la red propia se mantienen **fuera** de este
+repositorio (por su tamaño), en `../clasificador-datos/`.
 
-## Las categorías
-
-`js/categorias.js` define las 80 clases de COCO-SSD con su nombre en español, un icono de boxicons y un color propio. Expone `window.CATEGORIAS`, `window.CATEGORIA_POR_CLASE` y `window.CLASES_ACTIVAS_POR_DEFECTO`. Para cambiar nombres, iconos o qué categorías vienen activas, se edita ese archivo.
-
-## La red propia
-
-Los archivos que carga la página son:
-
-- `modelo_botellas/model.json`
-- `modelo_botellas/group1-shard1of2.bin`
-- `modelo_botellas/group1-shard2of2.bin`
-
-La red es gris, 100×100: tres convoluciones (32, 64 y 128) con MaxPool, luego dos capas densas. La última es una sigmoide. Solo se usa para confirmar la clase Botella.
-
-### Volver a entrenar los pesos
-
-El material está en `../clasificador-datos/objecto/`. Con el dataset ya descargado por kagglehub y TensorFlow instalado:
+## Instalación y uso local
 
 ```bash
-py -3 -u ../clasificador-datos/objecto/entrenamiento/exportar_bins.py
+git clone <URL-del-repositorio>
+cd Clasificador
+python3 -m http.server 8765
 ```
 
-El script escribe los dos `.bin`. Esos nombres no se cambian: la página los busca así. Al terminar, copia los `.bin` generados a `modelo_botellas/`.
+Abre <http://127.0.0.1:8765> en el navegador. Si el puerto está ocupado, cambie el número.
 
-## Si algo falla
+> La **cámara** y el **service worker** (uso sin conexión e instalación) necesitan un origen seguro:
+> `http://localhost`, `http://127.0.0.1` o `https://`. Abrir `index.html` con doble clic (`file://`)
+> no habilita esas funciones.
 
-| Qué pasa | Qué hacer |
-|---|---|
-| La cámara no arranca | Autoriza el permiso, usa `http://` o `https://`, y cierra otras apps que usen la cámara |
-| No detecta lo que quiero | Activa esa categoría en Ajustes y baja la sensibilidad |
-| Cuenta botellas pero no usa la red propia | Faltan los `.bin` en `modelo_botellas/` |
-| El mapa no encuentra el lugar | Reintenta: hace falta internet |
-| Se ve el diseño viejo | Borra la caché del sitio (el service worker cambió de versión) |
+## Despliegue
+
+Al ser un sitio 100 % estático, se puede publicar en **GitHub Pages** sirviendo la raíz del repositorio.
+URL del proyecto: _(próximamente)_.
+
+## Limitaciones conocidas
+
+- COCO-SSD reconoce **tipos de objeto**, no marcas ni productos concretos.
+- La precisión baja con **poca luz** o cuando los objetos están **tapados**.
+- El **mapa** depende de servidores públicos de Overpass que a veces se saturan; la app reintenta con
+  varios y guarda los resultados en caché para no dejar la búsqueda en blanco.
+
+## Próximos pasos
+
+- Escáner de códigos de barras.
+- Catálogo con precios y valor del inventario.
+- Alertas de stock mínimo.
+- Reportes en PDF o Excel.
+
+## Créditos y atribución
+
+- Datos del mapa © [colaboradores de OpenStreetMap](https://www.openstreetmap.org/copyright).
+- [TensorFlow.js](https://www.tensorflow.org/js) y [COCO-SSD](https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd).
+- [Leaflet](https://leafletjs.com/), [Boxicons](https://boxicons.com/) y [Google Fonts](https://fonts.google.com/).
+
+---
+
+Autor: **Rolando Velasco Soliz** · Materia: **INF432**

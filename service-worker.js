@@ -3,7 +3,7 @@
  * La carcasa se guarda al instalar y los CDN se reutilizan si ya se visitaron.
  * model.json y los dos .bin ya están entrenados y entran en la carcasa.
  */
-const SHELL_CACHE = "clasificador-shell-v16";
+const SHELL_CACHE = "clasificador-shell-v17";
 const EXTERNAL_CACHE = "clasificador-external-v1";
 const APP_FILES = [
   "./",
@@ -18,9 +18,9 @@ const APP_FILES = [
   "./js/mapa.js",
   "./js/categorias.js",
   "./manifest.webmanifest",
-  "./modelo_botellas/model.json",
-  "./modelo_botellas/group1-shard1of2.bin",
-  "./modelo_botellas/group1-shard2of2.bin"
+  "./modelo/model.json",
+  "./modelo/group1-shard1of2.bin",
+  "./modelo/group1-shard2of2.bin"
 ];
 
 self.addEventListener("install", (event) => {

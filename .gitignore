@@ -1,0 +1,12 @@
+# Editores y herramientas
+.opencode/
+.vscode/
+
+# Dependencias
+node_modules/
+
+# Registros
+*.log
+
+# Sistema
+.DS_Store
