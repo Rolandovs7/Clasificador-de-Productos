@@ -1,21 +1,33 @@
 {
   "id": "./",
-  "name": "Botellas IA — Reciclaje",
-  "short_name": "Botellas IA",
-  "description": "Cuenta botellas de plástico en una foto y guarda el inventario en este dispositivo.",
+  "name": "Clasificador",
+  "short_name": "Clasificador",
+  "description": "Cuenta botellas de plástico con la cámara, una foto o un video y guarda el inventario en este dispositivo.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#e3f6cf",
-  "theme_color": "#cfe8b0",
+  "background_color": "#0B0F14",
+  "theme_color": "#0B0F14",
   "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "assets/icono.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

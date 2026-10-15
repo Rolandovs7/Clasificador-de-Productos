@@ -1,14 +1,18 @@
-# ReciclApp
+# Clasificador
 
-Cuenta botellas, las guarda en un inventario de este navegador y busca basureros cerca. Las fotos no salen del dispositivo.
+Cuenta botellas con la cámara, una foto o un video, las guarda en un inventario de este navegador y busca basureros cerca. Las imágenes no salen del dispositivo.
 
-| | |
-|---|---|
-| Materia | Soporte a la toma de decisiones |
-| Docente | Jesús Bautista |
-| Alumno | Luishiño Pericena |
+Es un sitio estático: no necesita servidor, base de datos ni Python. Todo corre en el navegador (`index.html`).
 
-Es una página estática: no necesita servidor, base de datos ni Python. Todo corre en el navegador (`index.html`).
+## Estructura de la interfaz
+
+Tres secciones en un mismo panel:
+
+- **Escáner**: visor de cámara, foto o video con las cajas dibujadas encima y un contador en vivo.
+- **Inventario**: tarjetas de resumen y la lista de registros, con exportación a JSON y CSV.
+- **Mapa**: basureros y puntos de reciclaje cercanos (Leaflet + OpenStreetMap).
+
+En móvil hay una barra inferior con las tres pestañas. En escritorio, una barra lateral con el mismo menú.
 
 ## Cómo ejecutarlo
 
@@ -20,9 +24,7 @@ python -m http.server 8765
 
 Abre http://127.0.0.1:8765 . Si el puerto está ocupado, cambia el número. No abras `index.html` con doble clic: la cámara, la geolocalización y el service worker necesitan `http://` (o `https://`).
 
-## Cómo se juega
-
-**Jugar** es el tablero. **Mapa** son los basureros. El número de arriba es el total guardado.
+## Cómo se usa
 
 1. **Cámara** cuenta sola. **Foto** acepta JPG, PNG, WEBP o GIF, hasta 12 MB. **Video** acepta MP4, WEBM o QuickTime.
 2. Si hay dos botellas distintas, entran las dos. La misma no se vuelve a guardar mientras siga a la vista.
@@ -35,13 +37,21 @@ El inventario queda en el navegador (`botellas-ia-inventario-v1`). Cada fila tie
 
 En el mapa, **Mi ubicación** o una ciudad buscan en 1200 m. Amarillo es basurero, verde es contenedor y azul es punto de reciclaje. Esa búsqueda sí usa internet. Las fotos no se envían.
 
+## Autoría y pie de página
+
+El nombre y la materia del autor se editan en un solo sitio: la constante `PIE_INFO` al final de `index.html`.
+
+```js
+const PIE_INFO = { autor: "Rolando Velasco Soliz", materia: "INF432" };
+```
+
 ## Estructura del proyecto
 
 ```
-index.html            Tablero, cámara, inventario y mapa
-styles.css            Estilos de la página
+index.html            Escáner, inventario y mapa (todo el panel)
+styles.css            Estilos (tema oscuro, variables en :root)
 js/mapa.js            Mapa (Leaflet + OpenStreetMap)
-assets/               Íconos y SVG
+assets/               Logotipo, ícono PWA e imágenes
 modelo_botellas/      Red propia de TensorFlow.js (model.json + 2 .bin)
 manifest.webmanifest  Datos de la PWA
 service-worker.js     Caché para uso sin conexión
@@ -76,4 +86,4 @@ El script escribe los dos `.bin`. Esos nombres no se cambian: la página los bus
 | La cámara no arranca | Autoriza el permiso, usa `http://` o `https://`, y cierra otras apps que usen la cámara |
 | Cuenta botellas pero no usa la red propia | Faltan los `.bin` en `modelo_botellas/` |
 | El mapa no encuentra el lugar | Reintenta: hace falta internet |
-| Se ve el diseño viejo | Borra la caché del sitio |
+| Se ve el diseño viejo | Borra la caché del sitio (el service worker cambió de versión) |

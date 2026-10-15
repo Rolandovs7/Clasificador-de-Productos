@@ -1,18 +1,20 @@
 /**
- * Caché de Botellas IA.
- * Misma idea que patitasia.io: la carcasa se guarda al instalar
- * y los CDN se reutilizan si ya se visitaron.
+ * Caché de Clasificador.
+ * La carcasa se guarda al instalar y los CDN se reutilizan si ya se visitaron.
  * model.json y los dos .bin ya están entrenados y entran en la carcasa.
  */
-const SHELL_CACHE = "botellas-shell-v9";
-const EXTERNAL_CACHE = "botellas-external-v1";
+const SHELL_CACHE = "clasificador-shell-v14";
+const EXTERNAL_CACHE = "clasificador-external-v1";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
-  "./assets/botellas.svg",
+  "./assets/logo.png",
+  "./assets/logo-hero.png",
   "./assets/icono.png",
-  "./assets/icon-pwa.svg",
+  "./assets/icon-192.png",
+  "./assets/icon-maskable-512.png",
+  "./assets/favicon.png",
   "./js/mapa.js",
   "./manifest.webmanifest",
   "./modelo_botellas/model.json",
@@ -32,7 +34,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(keys
-        .filter((key) => key.startsWith("botellas-") && key !== SHELL_CACHE && key !== EXTERNAL_CACHE)
+        .filter((key) => (key.startsWith("clasificador-") || key.startsWith("botellas-")) && key !== SHELL_CACHE && key !== EXTERNAL_CACHE)
         .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())

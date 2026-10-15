@@ -3,171 +3,748 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#cfe8b0">
-    <meta name="description" content="Cuenta botellas de plástico con un clasificador local. Usa la cámara o sube una foto. La imagen no sale del dispositivo.">
+    <meta name="theme-color" content="#0B0F14">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description" content="Clasificador: cuenta botellas con la cámara, una foto o un video y guarda el inventario en este dispositivo.">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Botellas IA — ¿Hay botellas?">
-    <meta property="og:description" content="Una forma sencilla de contar botellas de plástico y guardar el inventario en el mismo dispositivo.">
-    <meta property="og:image" content="assets/botellas.svg">
-    <link rel="icon" type="image/png" href="assets/icono.png">
-    <meta name="author" content="Luishiño Pericena">
+    <meta property="og:title" content="Clasificador">
+    <meta property="og:description" content="Cuenta botellas de plástico y guarda el inventario en el mismo dispositivo.">
+    <meta property="og:image" content="assets/logo-hero.png">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>Botellas IA — Clasificador de botellas</title>
-    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-    <link rel="stylesheet" href="./styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <title>Clasificador</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="./styles.css">
   </head>
-  <body class="tablero">
-    <header class="hud">
-      <a href="#" class="marca focus-ring" aria-label="ReciclApp, inicio">
-        <img src="assets/icono.png" alt="" width="42" height="42">
-        <span>ReciclApp<small>caza botellas</small></span>
-      </a>
-      <nav class="nav" aria-label="Navegación principal">
-        <a href="#clasificador" class="focus-ring"><i class="bx bx-camera" aria-hidden="true"></i>Jugar</a>
-        <a href="#mapa-basureros" class="focus-ring"><i class="bx bx-map" aria-hidden="true"></i>Mapa</a>
-        <button id="install-app" type="button" class="boton boton-chico hidden"><i class="bx bx-download" aria-hidden="true"></i><span class="solo-ancho">Instalar</span></button>
-        <p class="marcador" aria-label="Botellas acumuladas"><img src="assets/icono.png" alt="" width="28" height="28"><strong id="marcador-total">0</strong></p>
-      </nav>
-    </header>
-
-    <main>
-      <section class="ancho hero">
-        <div>
-          <p class="pista"><i class="bx bx-recycle" aria-hidden="true"></i> Misión de reciclaje</p>
-          <h1>Caza la <span>botella</span> y súmala al marcador</h1>
-          <p>Cámara, foto o video. Si salen dos, entran las dos. La misma no se cuenta otra vez.</p>
-          <a href="#clasificador" class="boton boton-papel focus-ring"><i class="bx bx-play" aria-hidden="true"></i>A jugar</a>
-        </div>
-        <img class="hero-arte" src="assets/botellas.svg" alt="Botella frente a un basurero amarillo, un contenedor verde y un punto de reciclaje azul" width="640" height="360">
-      </section>
-
-      <section id="clasificador" class="zona">
-        <div class="ancho">
-          <div class="titulo-zona">
-            <p class="etiqueta">Tu turno</p>
-            <h2>¿Cuántas botellas salen?</h2>
-            <p>La cámara y el video cuentan solos. Si hay dos, entran las dos. La misma no se vuelve a registrar.</p>
+  <body>
+    <div class="app">
+      <aside class="lateral">
+        <div class="marca">
+          <a class="marca-enlace" href="#" aria-label="Clasificador, inicio">
+            <img src="assets/logo.png" alt="" width="40" height="40">
+            <span class="marca-texto"><strong>Clasificador</strong><small>panel de inventario</small></span>
+          </a>
+          <div class="marca-acciones">
+            <button id="ver-bienvenida" class="icono-boton" type="button" aria-label="Ver la presentación" title="Ver la presentación">
+              <i class="bx bx-slideshow" aria-hidden="true"></i>
+            </button>
+            <button id="alternar-tema" class="icono-boton" type="button" aria-label="Cambiar entre tema claro y oscuro" aria-pressed="false" title="Tema claro u oscuro">
+              <i class="bx bx-moon" aria-hidden="true"></i>
+            </button>
           </div>
-          <div class="juego">
-            <div class="panel">
+        </div>
+
+        <nav class="menu" aria-label="Navegación principal">
+          <span class="menu-indicador" aria-hidden="true"></span>
+          <button type="button" class="menu-item activo" data-view="escaner" aria-current="page">
+            <i class="bx bx-scan" aria-hidden="true"></i><span>Escáner</span>
+          </button>
+          <button type="button" class="menu-item" data-view="inventario">
+            <i class="bx bx-package" aria-hidden="true"></i><span>Inventario</span>
+            <span id="marcador-badge" class="badge hidden">0</span>
+          </button>
+          <button type="button" class="menu-item" data-view="mapa">
+            <i class="bx bx-map" aria-hidden="true"></i><span>Mapa</span>
+          </button>
+        </nav>
+
+        <div class="lateral-pie">
+          <p class="marcador" aria-label="Botellas acumuladas">
+            <i class="bx bx-recycle" aria-hidden="true"></i>
+            <span>Total</span><strong id="marcador-total">0</strong>
+          </p>
+          <button id="install-app" type="button" class="boton boton-fantasma hidden">
+            <i class="bx bx-download" aria-hidden="true"></i>Instalar app
+          </button>
+        </div>
+      </aside>
+
+      <main class="contenido">
+        <section id="clasificador" class="vista vista-activa" data-view="escaner" aria-labelledby="escaner-titulo">
+          <header class="vista-cabecera">
+            <p class="etiqueta"><i class="bx bx-scan" aria-hidden="true"></i> Escáner</p>
+            <h1 id="escaner-titulo">Cuenta tus <span class="texto-degradado">botellas</span></h1>
+            <p>Usa la cámara, una foto o un video. Si salen dos botellas distintas, entran las dos. La imagen no sale de tu dispositivo.</p>
+          </header>
+
+          <div class="escaner-grid">
+            <div class="panel visor-panel">
               <div class="escenario">
                 <video id="video" class="hidden" playsinline autoplay muted aria-label="Vista previa de la cámara o del video"></video>
                 <img id="foto-preview" class="hidden" alt="Imagen seleccionada para clasificar">
                 <canvas id="canvas" width="400" height="400" class="hidden" aria-hidden="true"></canvas>
-                <div id="placeholder" class="espera">
-                  <img src="assets/icono.png" alt="" width="72" height="72">
-                  <p>Tu foto aparecerá aquí</p>
-                  <span>JPG, PNG, WEBP, MP4 o cámara en vivo</span>
+
+                <div class="visor-marco" aria-hidden="true">
+                  <span class="esquina esquina-tl"></span>
+                  <span class="esquina esquina-tr"></span>
+                  <span class="esquina esquina-bl"></span>
+                  <span class="esquina esquina-br"></span>
                 </div>
-                <div id="camera-tag" class="chip hidden">Contando</div>
-                <div id="conteo-vivo" class="hidden">En vista: <span id="en-vista">0</span> · En esta toma: <span id="en-toma">0</span></div>
+                <div class="visor-barrido" aria-hidden="true"></div>
+
+                <div id="placeholder" class="espera">
+                  <img src="assets/logo.png" alt="" width="72" height="72">
+                  <p>Tu escaneo aparecerá aquí</p>
+                  <span>Admite imágenes JPG, PNG o WEBP, videos MP4 y cámara en directo</span>
+                </div>
+                <div id="camera-tag" class="live-badge hidden"><span class="live-punto" aria-hidden="true"></span>EN VIVO</div>
+                <div id="conteo-vivo" class="conteo-flotante hidden">
+                  <span class="conteo-chip"><i class="bx bx-show" aria-hidden="true"></i>En vista <strong id="en-vista">0</strong></span>
+                  <span class="conteo-chip"><i class="bx bx-check-circle" aria-hidden="true"></i>En esta toma <strong id="en-toma">0</strong></span>
+                </div>
+
+                <div class="esqueleto" aria-hidden="true">
+                  <div class="esqueleto-bloques"><span></span><span></span><span></span></div>
+                  <div class="esqueleto-barra"><span></span></div>
+                  <p>Cargando los modelos de IA…</p>
+                </div>
               </div>
-              <div class="teclas">
-                <button id="start-camera" type="button" class="tecla tecla-verde focus-ring"><i class="bx bx-camera" aria-hidden="true"></i>Cámara</button>
-                <label for="image-upload" class="tecla tecla-azul focus-ring"><i class="bx bx-image-add" aria-hidden="true"></i>Foto</label>
+
+              <div class="dock">
+                <button id="start-camera" type="button" class="dock-boton">
+                  <i class="bx bx-camera" aria-hidden="true"></i><span>Cámara</span>
+                </button>
+                <label for="image-upload" class="dock-boton">
+                  <i class="bx bx-image-add" aria-hidden="true"></i><span>Foto</span>
+                </label>
                 <input id="image-upload" class="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
-                <label for="video-upload" class="tecla tecla-papel focus-ring"><i class="bx bx-video" aria-hidden="true"></i>Video</label>
+                <button id="classify" type="button" class="dock-primario" disabled aria-label="Registrar ahora">
+                  <i class="bx bx-scan" aria-hidden="true"></i>
+                </button>
+                <label for="video-upload" class="dock-boton">
+                  <i class="bx bx-video" aria-hidden="true"></i><span>Video</span>
+                </label>
                 <input id="video-upload" class="sr-only" type="file" accept="video/mp4,video/webm,video/quicktime">
-                <button id="switch-camera" type="button" class="tecla hidden focus-ring" aria-label="Cambiar entre cámara frontal y trasera"><i class="bx bx-refresh" aria-hidden="true"></i>Cambiar cámara</button>
-                <button id="classify" type="button" disabled class="boton boton-jugar focus-ring"><i class="bx bx-scan" aria-hidden="true"></i>Registrar ahora</button>
+                <button id="nueva-toma" type="button" class="dock-boton hidden">
+                  <i class="bx bx-plus-circle" aria-hidden="true"></i><span>Nueva toma</span>
+                </button>
+                <button id="switch-camera" type="button" class="dock-boton hidden" aria-label="Cambiar entre cámara frontal y trasera">
+                  <i class="bx bx-refresh" aria-hidden="true"></i><span>Cambiar</span>
+                </button>
               </div>
-              <p id="status" role="status" aria-live="polite">Preparando el modelo de IA…</p>
-              <button id="nueva-toma" type="button" class="tecla hidden focus-ring">Nueva toma</button>
+
+              <div class="estado-fila">
+                <span id="cargador" class="cargador" aria-hidden="true"></span>
+                <p id="status" class="estado" role="status" aria-live="polite">Preparando el modelo de IA…</p>
+              </div>
             </div>
-            <aside>
+
+            <aside class="resultado-columna">
               <section class="panel resultado" aria-labelledby="result-heading">
-                <p id="result-heading" class="etiqueta">Resultado</p>
-                <div id="result-icon" aria-hidden="true"><i class="bx bx-recycle"></i></div>
-                <p id="result-label">Aún no lo sabemos</p>
-                <p id="result-confidence"></p>
-                <button id="speak-result" type="button" class="boton boton-chico hidden focus-ring" aria-label="Escuchar el resultado"><i class="bx bx-volume-full" aria-hidden="true"></i>Escuchar</button>
+                <p id="result-heading" class="etiqueta">Detección</p>
+                <div id="result-icon" class="resultado-icono" aria-hidden="true"><i class="bx bx-recycle"></i></div>
+                <p id="result-label" class="resultado-etiqueta">Todavía sin datos</p>
+                <p id="result-confidence" class="resultado-confianza"></p>
+                <button id="speak-result" type="button" class="boton boton-suave hidden" aria-label="Escuchar el resultado">
+                  <i class="bx bx-volume-full" aria-hidden="true"></i>Escuchar
+                </button>
               </section>
+
               <section class="panel privacidad" aria-labelledby="privacy-heading">
-                <h3 id="privacy-heading"><i class="bx bx-lock-alt" aria-hidden="true"></i> Tu privacidad importa</h3>
-                <p>Tus fotos no salen de tu dispositivo. Aquí solo se guarda el inventario: etiqueta, fecha, cantidad, confianza y cajas.</p>
+                <h3 id="privacy-heading"><i class="bx bx-lock-alt" aria-hidden="true"></i> Tu información es tuya</h3>
+                <p>Las imágenes se procesan en tu equipo y nunca se envían a ningún servidor. Solo se almacena el registro del inventario: categoría, fecha, cantidad, nivel de confianza y recuadros.</p>
               </section>
+
+              <p class="nota">El modelo puede fallar con poca luz, imágenes movidas o cuando unos objetos tapan a otros.</p>
             </aside>
           </div>
-          <p class="nota">La IA puede equivocarse si la imagen está oscura, borrosa o las botellas se tapan entre sí.</p>
-        </div>
-      </section>
+        </section>
 
-      <section id="historial" class="ancho inventario">
-        <div class="cabecera-fila">
-          <div>
-            <p class="etiqueta">Botín</p>
-            <h2>Inventario</h2>
-            <p>Total: <span id="inventory-total">0</span> botellas</p>
+        <section id="historial" class="vista" data-view="inventario" hidden aria-labelledby="inventario-titulo">
+          <header class="vista-cabecera">
+            <p class="etiqueta"><i class="bx bx-package" aria-hidden="true"></i> Inventario</p>
+            <h1 id="inventario-titulo">Tu <span class="texto-degradado">inventario</span></h1>
+            <p>Cada botella registrada en este dispositivo. Puedes corregir la cantidad, borrar filas o exportar los datos.</p>
+          </header>
+
+          <div class="resumen">
+            <article class="kpi">
+              <div class="kpi-cabecera">
+                <span class="kpi-icono"><i class="bx bx-package" aria-hidden="true"></i></span>
+                <span class="chip chip-neutro">total</span>
+              </div>
+              <span class="kpi-titulo">Total de productos</span>
+              <strong id="resumen-total" class="kpi-numero">0</strong>
+              <small>botellas registradas</small>
+              <svg class="spark" data-spark="total" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+                <path class="spark-area"></path><path class="spark-line"></path>
+              </svg>
+            </article>
+            <article class="kpi">
+              <div class="kpi-cabecera">
+                <span class="kpi-icono"><i class="bx bx-category" aria-hidden="true"></i></span>
+                <span class="chip chip-neutro">tipos</span>
+              </div>
+              <span class="kpi-titulo">Categorías distintas</span>
+              <strong id="resumen-categorias" class="kpi-numero">0</strong>
+              <small>tipos detectados</small>
+              <svg class="spark" data-spark="categorias" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
+                <path class="spark-area"></path><path class="spark-line"></path>
+              </svg>
+            </article>
+            <article class="kpi">
+              <div class="kpi-cabecera">
+                <span class="kpi-icono"><i class="bx bx-time-five" aria-hidden="true"></i></span>
+                <span class="chip chip-neutro">último</span>
+              </div>
+              <span class="kpi-titulo">Último registro</span>
+              <strong id="resumen-ultimo" class="kpi-numero kpi-fecha">—</strong>
+              <small>fecha y hora</small>
+            </article>
           </div>
-          <div class="acciones">
-            <button id="export-json" type="button" class="boton boton-chico hidden focus-ring"><i class="bx bx-download" aria-hidden="true"></i>JSON</button>
-            <button id="export-csv" type="button" class="boton boton-chico hidden focus-ring"><i class="bx bx-spreadsheet" aria-hidden="true"></i>CSV</button>
-            <button id="clear-history" type="button" class="boton boton-chico boton-texto hidden focus-ring"><i class="bx bx-trash" aria-hidden="true"></i>Borrar</button>
+
+          <div class="analitica">
+            <section class="panel cuadro">
+              <header class="cuadro-cabecera">
+                <h2>Registros por día</h2>
+                <span class="chip chip-neutro">últimos 7 días</span>
+              </header>
+              <div id="grafico-barras" class="grafico" role="img" aria-label="Gráfico de barras con los registros de los últimos siete días"></div>
+              <p id="grafico-vacio" class="micro-vacio hidden">Todavía no hay datos para el gráfico.</p>
+            </section>
+            <section class="panel cuadro">
+              <header class="cuadro-cabecera">
+                <h2>Categorías</h2>
+              </header>
+              <ul id="categorias" class="categorias" aria-label="Totales por categoría"></ul>
+              <p id="categorias-vacio" class="micro-vacio">Registra tu primera botella para ver las categorías aquí.</p>
+            </section>
           </div>
-        </div>
-        <p id="history-empty" class="vacio"><i class="bx bx-package" aria-hidden="true"></i> Todavía no hay registros. Cada botella entra sola, una sola vez.</p>
-        <div class="tabla-cabecera" aria-hidden="true">
-          <span></span>
-          <span>Registro</span>
-          <span>Confianza</span>
-          <span>Cant.</span>
-          <span></span>
-        </div>
-        <ul id="history-list" class="tabla-botellas" aria-label="Inventario de botellas"></ul>
-      </section>
 
-      <section id="mapa-basureros" class="ancho mapa-zona">
-        <p class="etiqueta">Cerca de ti</p>
-        <h2>Busca un basurero</h2>
-        <p>Lima es un basurero, verde un contenedor y menta un punto de reciclaje. La foto sigue en tu dispositivo.</p>
-        <div class="buscar">
-          <button id="buscar-basureros" type="button" class="boton boton-azul focus-ring"><i class="bx bx-current-location" aria-hidden="true"></i>Mi ubicación</button>
-          <input id="lugar-basureros" type="search" placeholder="Ciudad o dirección" aria-label="Ciudad o dirección">
-          <button id="buscar-lugar" type="button" class="boton boton-papel focus-ring"><i class="bx bx-search" aria-hidden="true"></i>Buscar</button>
-        </div>
-        <p id="mapa-estado">Todavía no hay una búsqueda.</p>
-        <ul class="leyenda" aria-label="Tipos de basurero">
-          <li><i class="bin bin-papel" aria-hidden="true"></i>Basurero</li>
-          <li><i class="bin bin-vidrio" aria-hidden="true"></i>Contenedor</li>
-          <li><i class="bin bin-plastico" aria-hidden="true"></i>Reciclaje</li>
-        </ul>
-        <div id="mapa" role="region" aria-label="Mapa de basureros"></div>
-        <ul id="mapa-lista" aria-label="Lugares encontrados"></ul>
-      </section>
+          <div class="cabecera-fila">
+            <h2>Registros <span class="contador" id="inventory-total">0</span></h2>
+            <div class="acciones">
+              <button id="export-json" type="button" class="boton boton-suave hidden"><i class="bx bx-download" aria-hidden="true"></i>JSON</button>
+              <button id="export-csv" type="button" class="boton boton-suave hidden"><i class="bx bx-spreadsheet" aria-hidden="true"></i>CSV</button>
+              <button id="clear-history" type="button" class="boton boton-peligro hidden"><i class="bx bx-trash" aria-hidden="true"></i>Vaciar</button>
+            </div>
+          </div>
 
-      <section id="como-funciona" class="ancho pasos">
-        <p class="etiqueta">Cómo se juega</p>
-        <h2>Tres pasos y el marcador sube</h2>
-        <div class="pasos-grid">
-          <article class="paso"><i class="bx bx-camera" aria-hidden="true"></i><div><h3>1. Elige la toma</h3><p>Foto, cámara o video. El tablero es el mismo.</p></div></article>
-          <article class="paso"><i class="bx bx-scan" aria-hidden="true"></i><div><h3>2. La IA marca</h3><p>Solo entra lo que el detector llama bottle. Las cajas se dibujan encima.</p></div></article>
-          <article class="paso"><i class="bx bx-list-check" aria-hidden="true"></i><div><h3>3. Sumas el botín</h3><p>Cada botella queda una vez. Puedes corregir la cantidad o exportar.</p></div></article>
-        </div>
-        <div class="confianza-nota">
-          <h3>¿Qué significa la confianza?</h3>
-          <p>Es una estimación. Si queda por debajo del 60 %, el resultado se marca como poco seguro.</p>
-        </div>
-      </section>
-    </main>
+          <div id="history-empty" class="vacio hidden">
+            <img class="vacio-ilustracion" src="assets/logo.png" alt="" width="160" height="160">
+            <p class="vacio-titulo">Tu inventario está vacío</p>
+            <p class="vacio-texto">Aún no has escaneado nada. Cuando registres una botella aparecerá aquí.</p>
+          </div>
 
-    <footer class="pie safe-bottom">
-      <p><strong>ReciclApp</strong></p>
-      <p>Docente: Jesús Bautista · Alumno: Luishiño Pericena</p>
-      <p id="pwa-status">Puedes añadir ReciclApp a la pantalla de inicio desde el menú de tu navegador.</p>
-    </footer>
+          <div class="tabla-cabecera" aria-hidden="true">
+            <span></span><span>Registro</span><span>Confianza</span><span>Cant.</span><span></span>
+          </div>
+          <ul id="history-list" class="tabla-botellas" aria-label="Inventario de botellas"></ul>
+        </section>
 
-    <div id="registro-modal" hidden role="status" aria-live="polite" aria-labelledby="modal-titulo">
-      <p class="etiqueta">Inventario</p>
-      <h3 id="modal-titulo">Botellas registradas</h3>
-      <img id="modal-foto" alt="Encuadre con las botellas marcadas" class="hidden">
-      <p id="modal-detalle"></p>
-      <button id="modal-cerrar" type="button" class="boton boton-papel focus-ring">Continuar</button>
+        <section id="mapa-basureros" class="vista" data-view="mapa" hidden aria-labelledby="mapa-titulo">
+          <header class="vista-cabecera">
+            <p class="etiqueta"><i class="bx bx-map" aria-hidden="true"></i> A tu alrededor</p>
+            <h1 id="mapa-titulo">Encuentra dónde <span class="texto-degradado">desechar</span></h1>
+            <p>Amarillo marca los basureros, verde los contenedores y azul los puntos de reciclaje. La búsqueda requiere conexión a internet.</p>
+          </header>
+
+          <div class="mapa-contenedor">
+            <div id="mapa" role="region" aria-label="Mapa de basureros"></div>
+
+            <div class="mapa-controles glass">
+              <button id="buscar-basureros" type="button" class="boton boton-primario">
+                <i class="bx bx-current-location" aria-hidden="true"></i>Mi ubicación
+              </button>
+              <div class="mapa-busqueda">
+                <input id="lugar-basureros" type="search" placeholder="Ciudad o dirección" aria-label="Ciudad o dirección">
+                <button id="buscar-lugar" type="button" class="boton boton-suave">
+                  <i class="bx bx-search" aria-hidden="true"></i>Buscar
+                </button>
+              </div>
+            </div>
+
+            <ul class="leyenda glass" aria-label="Tipos de basurero">
+              <li><i class="punto punto-amarillo" aria-hidden="true"></i>Basurero</li>
+              <li><i class="punto punto-verde" aria-hidden="true"></i>Contenedor</li>
+              <li><i class="punto punto-azul" aria-hidden="true"></i>Reciclaje</li>
+            </ul>
+          </div>
+
+          <div id="mapa-hoja" class="mapa-hoja">
+            <button id="hoja-asa" class="hoja-asa" type="button" aria-expanded="false" aria-controls="mapa-lista" aria-label="Mostrar u ocultar la lista de lugares">
+              <span aria-hidden="true"></span>
+            </button>
+            <p id="mapa-estado" class="mapa-estado">Todavía no hay una búsqueda.</p>
+            <ul id="mapa-lista" class="mapa-lista" aria-label="Lugares encontrados"></ul>
+          </div>
+        </section>
+
+        <footer class="pie">
+          <p><strong>Clasificador</strong></p>
+          <p id="pie-info">Autor: Rolando Velasco Soliz · Materia: INF432</p>
+          <p id="pwa-status" class="pwa-estado"></p>
+        </footer>
+      </main>
     </div>
 
+    <div id="registro-modal" class="modal" hidden role="status" aria-live="polite" aria-labelledby="modal-titulo">
+      <div class="modal-caja glass">
+        <p class="etiqueta">Inventario</p>
+        <h3 id="modal-titulo">Botellas registradas</h3>
+        <img id="modal-foto" alt="Encuadre con las botellas marcadas" class="hidden">
+        <p id="modal-detalle" class="modal-detalle"></p>
+        <button id="modal-cerrar" type="button" class="boton boton-primario">Continuar</button>
+      </div>
+    </div>
+
+    <div id="bienvenida" class="bienvenida" hidden role="dialog" aria-modal="true" aria-labelledby="bienvenida-titulo">
+      <div class="bienvenida-caja glass">
+        <button id="bienvenida-cerrar" class="icono-boton bienvenida-cerrar" type="button" aria-label="Cerrar la bienvenida">
+          <i class="bx bx-x" aria-hidden="true"></i>
+        </button>
+        <div class="bienvenida-ilustracion" role="button" tabindex="0" aria-label="Omitir la animación de entrada">
+          <img class="hero-logo" src="assets/logo-hero.png" alt="">
+          <span class="hero-barrido" aria-hidden="true"></span>
+        </div>
+        <p class="etiqueta"><i class="bx bx-party" aria-hidden="true"></i> Bienvenido</p>
+        <h2 id="bienvenida-titulo">Clasifica y cuenta tu <span class="texto-degradado">inventario</span> con la cámara</h2>
+        <p class="bienvenida-sub">Apunta, registra y guarda cada botella sin subir tus fotos a ningún sitio. Todo queda en tu dispositivo.</p>
+        <div class="bienvenida-chips">
+          <span class="chip-funcion"><i class="bx bx-brain" aria-hidden="true"></i>Detección con IA</span>
+          <span class="chip-funcion"><i class="bx bx-package" aria-hidden="true"></i>Inventario automático</span>
+          <span class="chip-funcion"><i class="bx bx-lock-alt" aria-hidden="true"></i>Funciona sin subir tus fotos</span>
+        </div>
+        <button id="bienvenida-empezar" class="boton boton-primario boton-grande" type="button">
+          <i class="bx bx-scan" aria-hidden="true"></i>Empezar a escanear
+        </button>
+      </div>
+    </div>
+
+    <div id="toast-zona" class="toast-zona" aria-live="polite" aria-atomic="true"></div>
+
+    <script>
+      /* ======================================================================
+         Capa de presentación: pie, tema, navegación, analítica visual,
+         bienvenida, avisos y micro-interacciones. No toca la detección ni
+         el inventario; solo lee y pinta.
+         ====================================================================== */
+
+      /* Pie de página editable: cambia aquí tu nombre y tu materia. */
+      const PIE_INFO = { autor: "Rolando Velasco Soliz", materia: "INF432" };
+      const pieInfo = document.getElementById("pie-info");
+      if (pieInfo) pieInfo.textContent = "Autor: " + PIE_INFO.autor + " · Materia: " + PIE_INFO.materia;
+
+      (() => {
+        "use strict";
+
+        const raiz = document.documentElement;
+        const reducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const CLAVE_TEMA = "clasificador-tema-v1";
+        const CLAVE_BIENVENIDA = "clasificador-bienvenida-v1";
+        const CLAVE_INVENTARIO = "botellas-ia-inventario-v1";
+
+        /* ----- Lectura (solo lectura) del inventario para gráficas -------- */
+        function leerInventario() {
+          try {
+            const datos = JSON.parse(localStorage.getItem(CLAVE_INVENTARIO) || "[]");
+            return Array.isArray(datos) ? datos : [];
+          } catch (error) {
+            return [];
+          }
+        }
+
+        /* ----- Tema claro / oscuro --------------------------------------- */
+        const botonTema = document.getElementById("alternar-tema");
+        function aplicarTema(tema) {
+          const claro = tema === "claro";
+          raiz.dataset.tema = claro ? "claro" : "oscuro";
+          if (botonTema) {
+            botonTema.setAttribute("aria-pressed", String(claro));
+            const icono = botonTema.querySelector("i");
+            if (icono) icono.className = claro ? "bx bx-sun" : "bx bx-moon";
+          }
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", claro ? "#EEF3F8" : "#0B0F14");
+        }
+        let temaGuardado = "oscuro";
+        try { temaGuardado = localStorage.getItem(CLAVE_TEMA) || "oscuro"; } catch (error) {}
+        aplicarTema(temaGuardado);
+        if (botonTema) {
+          botonTema.addEventListener("click", () => {
+            const nuevo = raiz.dataset.tema === "claro" ? "oscuro" : "claro";
+            aplicarTema(nuevo);
+            try { localStorage.setItem(CLAVE_TEMA, nuevo); } catch (error) {}
+          });
+        }
+
+        /* ----- Navegación con indicador deslizante ----------------------- */
+        const botones = Array.from(document.querySelectorAll(".menu-item[data-view]"));
+        const vistas = Array.from(document.querySelectorAll(".vista[data-view]"));
+        const indicador = document.querySelector(".menu-indicador");
+        let vistaActual = "escaner";
+
+        function moverIndicador() {
+          if (!indicador) return;
+          const activo = botones.find((b) => b.dataset.view === vistaActual);
+          if (!activo) return;
+          const cont = activo.closest(".menu");
+          if (!cont) return;
+          const rc = cont.getBoundingClientRect();
+          const ra = activo.getBoundingClientRect();
+          indicador.style.setProperty("--ix", (ra.left - rc.left) + "px");
+          indicador.style.setProperty("--iy", (ra.top - rc.top) + "px");
+          indicador.style.setProperty("--iw", ra.width + "px");
+          indicador.style.setProperty("--ih", ra.height + "px");
+        }
+
+        function mostrar(vista, opciones) {
+          vistaActual = vista;
+          vistas.forEach((seccion) => {
+            const activa = seccion.dataset.view === vista;
+            seccion.classList.toggle("vista-activa", activa);
+            seccion.hidden = !activa;
+          });
+          botones.forEach((boton) => {
+            const activo = boton.dataset.view === vista;
+            boton.classList.toggle("activo", activo);
+            if (activo) boton.setAttribute("aria-current", "page");
+            else boton.removeAttribute("aria-current");
+          });
+          requestAnimationFrame(moverIndicador);
+          if (vista === "mapa") {
+            setTimeout(() => {
+              if (window.__clasificadorMapa) window.__clasificadorMapa.invalidateSize();
+            }, 90);
+          }
+          if (vista === "inventario") {
+            renderAnalitica();
+            animarResumen();
+          }
+          if (!reducido && !(opciones && opciones.silencioso)) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }
+        botones.forEach((boton) => boton.addEventListener("click", () => mostrar(boton.dataset.view)));
+        window.addEventListener("resize", moverIndicador);
+        window.addEventListener("load", moverIndicador);
+
+        /* ----- Count-up de números --------------------------------------- */
+        function animarNumero(el, objetivo) {
+          if (!el) return;
+          const destino = Number(objetivo) || 0;
+          const desde = Number(el.dataset.valor || 0);
+          el.dataset.valor = String(destino);
+          if (reducido || desde === destino) {
+            el.textContent = destino.toLocaleString("es");
+            return;
+          }
+          const inicio = performance.now();
+          const duracion = 720;
+          const paso = (t) => {
+            const p = Math.min(1, (t - inicio) / duracion);
+            const suave = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(desde + (destino - desde) * suave).toLocaleString("es");
+            if (p < 1) requestAnimationFrame(paso);
+            else el.textContent = destino.toLocaleString("es");
+          };
+          requestAnimationFrame(paso);
+        }
+        function animarResumen() {
+          ["resumen-total", "resumen-categorias"].forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const destino = parseInt((el.textContent || "").replace(/\D+/g, ""), 10) || 0;
+            el.dataset.valor = "0";
+            animarNumero(el, destino);
+          });
+        }
+
+        /* ----- Series de los últimos 7 días ------------------------------ */
+        function serie7dias() {
+          const entradas = leerInventario();
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const totales = new Array(7).fill(0);
+          const cats = Array.from({ length: 7 }, () => new Set());
+          for (const item of entradas) {
+            const fecha = new Date(item.fecha);
+            if (Number.isNaN(fecha.getTime())) continue;
+            fecha.setHours(0, 0, 0, 0);
+            const distancia = Math.round((hoy - fecha) / 86400000);
+            if (distancia < 0 || distancia > 6) continue;
+            const pos = 6 - distancia;
+            totales[pos] += Number(item.cantidad) || 0;
+            cats[pos].add(item.etiqueta || "Botella");
+          }
+          return { totales, categorias: cats.map((s) => s.size) };
+        }
+
+        function sparkPath(valores) {
+          const w = 100;
+          const h = 32;
+          const max = Math.max(1, ...valores);
+          const n = Math.max(1, valores.length - 1);
+          const puntos = valores.map((v, i) => [(i / n) * w, h - 4 - (v / max) * (h - 8)]);
+          const linea = puntos.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+          return { linea, area: linea + " L " + w + " " + h + " L 0 " + h + " Z" };
+        }
+        function actualizarSparklines() {
+          const { totales, categorias } = serie7dias();
+          const mapa = { total: totales, categorias };
+          document.querySelectorAll(".spark").forEach((svg) => {
+            const dato = mapa[svg.dataset.spark];
+            if (!dato) return;
+            const { linea, area } = sparkPath(dato);
+            const l = svg.querySelector(".spark-line");
+            const a = svg.querySelector(".spark-area");
+            if (l) l.setAttribute("d", linea);
+            if (a) a.setAttribute("d", area);
+          });
+        }
+
+        /* ----- Gráfico de barras ----------------------------------------- */
+        function renderGrafico() {
+          const cont = document.getElementById("grafico-barras");
+          const vacio = document.getElementById("grafico-vacio");
+          if (!cont) return;
+          const { totales } = serie7dias();
+          const hayDatos = totales.some((v) => v > 0);
+          const max = Math.max(1, ...totales);
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const iniciales = ["D", "L", "M", "X", "J", "V", "S"];
+          cont.replaceChildren();
+          totales.forEach((valor, i) => {
+            const fecha = new Date(hoy);
+            fecha.setDate(hoy.getDate() - (6 - i));
+            const barra = document.createElement("div");
+            barra.className = "barra";
+            barra.tabIndex = 0;
+            barra.setAttribute("aria-label", valor + " registros el " + fecha.toLocaleDateString("es"));
+            const pista = document.createElement("div");
+            pista.className = "barra-pista";
+            const relleno = document.createElement("span");
+            relleno.className = "barra-relleno";
+            relleno.style.setProperty("--alto", Math.max(valor > 0 ? 8 : 2, Math.round((valor / max) * 100)) + "%");
+            relleno.style.setProperty("--retraso", i * 55 + "ms");
+            pista.append(relleno);
+            const tip = document.createElement("span");
+            tip.className = "barra-tip";
+            tip.textContent = String(valor);
+            const etiqueta = document.createElement("span");
+            etiqueta.className = "barra-dia";
+            etiqueta.textContent = iniciales[fecha.getDay()];
+            barra.append(tip, pista, etiqueta);
+            cont.append(barra);
+          });
+          if (vacio) vacio.classList.toggle("hidden", hayDatos);
+          cont.classList.toggle("opaco", !hayDatos);
+        }
+
+        /* ----- Tarjetas por categoría ------------------------------------ */
+        function renderCategorias() {
+          const cont = document.getElementById("categorias");
+          const vacio = document.getElementById("categorias-vacio");
+          if (!cont) return;
+          const entradas = leerInventario();
+          const mapa = new Map();
+          for (const item of entradas) {
+            const nombre = item.etiqueta || "Botella";
+            mapa.set(nombre, (mapa.get(nombre) || 0) + (Number(item.cantidad) || 0));
+          }
+          cont.replaceChildren();
+          if (!mapa.size) {
+            if (vacio) vacio.classList.remove("hidden");
+            return;
+          }
+          if (vacio) vacio.classList.add("hidden");
+          const total = Array.from(mapa.values()).reduce((a, b) => a + b, 0) || 1;
+          for (const [nombre, cantidad] of mapa) {
+            const porcentaje = Math.round((cantidad / total) * 100);
+            const li = document.createElement("li");
+            li.className = "categoria";
+            const icono = document.createElement("span");
+            icono.className = "categoria-icono";
+            icono.innerHTML = '<i class="bx bx-recycle" aria-hidden="true"></i>';
+            const info = document.createElement("div");
+            info.className = "categoria-info";
+            const titulo = document.createElement("strong");
+            titulo.textContent = nombre;
+            const detalle = document.createElement("small");
+            detalle.textContent = cantidad + (cantidad === 1 ? " unidad · " : " unidades · ") + porcentaje + "%";
+            const barra = document.createElement("span");
+            barra.className = "categoria-barra";
+            const relleno = document.createElement("span");
+            relleno.style.width = porcentaje + "%";
+            barra.append(relleno);
+            info.append(titulo, detalle, barra);
+            const chip = document.createElement("span");
+            chip.className = "chip chip-acento";
+            chip.textContent = cantidad + "";
+            li.append(icono, info, chip);
+            cont.append(li);
+          }
+        }
+
+        function renderAnalitica() {
+          renderGrafico();
+          renderCategorias();
+          actualizarSparklines();
+        }
+
+        /* ----- Observa el historial para refrescar analítica y count-up -- */
+        const historialLista = document.getElementById("history-list");
+        if (historialLista) {
+          new MutationObserver(() => {
+            const totalEl = document.getElementById("resumen-total");
+            const catsEl = document.getElementById("resumen-categorias");
+            if (totalEl) animarNumero(totalEl, parseInt((totalEl.textContent || "0").replace(/\D+/g, ""), 10) || 0);
+            if (catsEl) animarNumero(catsEl, parseInt((catsEl.textContent || "0").replace(/\D+/g, ""), 10) || 0);
+            renderAnalitica();
+          }).observe(historialLista, { childList: true });
+        }
+
+        /* ----- Aviso tipo toast al registrar ----------------------------- */
+        function mostrarToast(mensaje, tipo) {
+          const zona = document.getElementById("toast-zona");
+          if (!zona) return;
+          const toast = document.createElement("div");
+          toast.className = "toast toast-" + (tipo || "ok");
+          const icono = document.createElement("span");
+          icono.className = "toast-icono";
+          icono.innerHTML = '<i class="bx ' + (tipo === "neutro" ? "bx-info-circle" : "bx-check-circle") + '" aria-hidden="true"></i>';
+          const texto = document.createElement("span");
+          texto.className = "toast-texto";
+          texto.textContent = mensaje;
+          const barra = document.createElement("span");
+          barra.className = "toast-barra";
+          toast.append(icono, texto, barra);
+          zona.append(toast);
+          requestAnimationFrame(() => toast.classList.add("visible"));
+          setTimeout(() => {
+            toast.classList.remove("visible");
+            setTimeout(() => toast.remove(), 420);
+          }, 3200);
+        }
+
+        const modal = document.getElementById("registro-modal");
+        const modalTitulo = document.getElementById("modal-titulo");
+        if (modal) {
+          new MutationObserver(() => {
+            if (modal.hidden) return;
+            const texto = (modalTitulo && modalTitulo.textContent ? modalTitulo.textContent : "").trim();
+            const coincide = texto.match(/(\d+)/);
+            if (coincide) {
+              const n = coincide[1];
+              mostrarToast("+" + n + " " + (n === "1" ? "Botella registrada" : "Botellas registradas"), "ok");
+            } else if (/ya estaban/i.test(texto)) {
+              mostrarToast("Ya estaban registradas", "neutro");
+            }
+          }).observe(modal, { attributes: true, attributeFilter: ["hidden"] });
+        }
+
+        /* ----- Pulso al incrementar los contadores en vivo --------------- */
+        const enToma = document.getElementById("en-toma");
+        if (enToma) {
+          new MutationObserver(() => {
+            const chip = enToma.closest(".conteo-chip");
+            if (!chip) return;
+            chip.classList.remove("pulso");
+            void chip.offsetWidth;
+            chip.classList.add("pulso");
+          }).observe(enToma, { childList: true, characterData: true, subtree: true });
+        }
+
+        /* ----- Esqueleto de carga sincronizado con #cargador ------------- */
+        const cargador = document.getElementById("cargador");
+        const esqueleto = document.querySelector(".esqueleto");
+        if (cargador && esqueleto) {
+          const sincronizar = () => esqueleto.classList.toggle("hidden", cargador.classList.contains("hidden"));
+          sincronizar();
+          new MutationObserver(sincronizar).observe(cargador, { attributes: true, attributeFilter: ["class"] });
+        }
+
+        /* ----- Visor "en vivo": activa marcos y barrido con la cámara ---- */
+        const cameraTag = document.getElementById("camera-tag");
+        const escenario = document.querySelector(".escenario");
+        if (cameraTag && escenario) {
+          const reflejarVivo = () => escenario.classList.toggle("en-vivo", !cameraTag.classList.contains("hidden"));
+          reflejarVivo();
+          new MutationObserver(reflejarVivo).observe(cameraTag, { attributes: true, attributeFilter: ["class"] });
+        }
+
+        /* ----- Bienvenida (solo la primera vez, reabrible) --------------- */
+        const bienvenida = document.getElementById("bienvenida");
+        function abrirBienvenida() {
+          if (!bienvenida) return;
+          bienvenida.hidden = false;
+          document.body.classList.add("sin-scroll");
+          bienvenida.classList.remove("abierta");
+          void bienvenida.offsetWidth;
+          bienvenida.classList.add("abierta");
+          const empezar = document.getElementById("bienvenida-empezar");
+          if (empezar) empezar.focus({ preventScroll: true });
+        }
+        function cerrarBienvenida() {
+          if (!bienvenida) return;
+          bienvenida.hidden = true;
+          bienvenida.classList.remove("abierta");
+          document.body.classList.remove("sin-scroll");
+        }
+        let yaVista = false;
+        try { yaVista = localStorage.getItem(CLAVE_BIENVENIDA) === "1"; } catch (error) {}
+        if (!yaVista) {
+          abrirBienvenida();
+          try { localStorage.setItem(CLAVE_BIENVENIDA, "1"); } catch (error) {}
+        }
+        const verBienvenida = document.getElementById("ver-bienvenida");
+        if (verBienvenida) verBienvenida.addEventListener("click", abrirBienvenida);
+        const empezarBtn = document.getElementById("bienvenida-empezar");
+        if (empezarBtn) empezarBtn.addEventListener("click", cerrarBienvenida);
+        const cerrarBtn = document.getElementById("bienvenida-cerrar");
+        if (cerrarBtn) cerrarBtn.addEventListener("click", cerrarBienvenida);
+        const ilustracion = document.querySelector(".bienvenida-ilustracion");
+        if (ilustracion) {
+          ilustracion.addEventListener("click", cerrarBienvenida);
+          ilustracion.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); cerrarBienvenida(); }
+          });
+        }
+        if (bienvenida) bienvenida.addEventListener("click", (event) => { if (event.target === bienvenida) cerrarBienvenida(); });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && bienvenida && !bienvenida.hidden) cerrarBienvenida();
+        });
+
+        /* ----- Hoja deslizable del mapa ---------------------------------- */
+        const hoja = document.getElementById("mapa-hoja");
+        const asa = document.getElementById("hoja-asa");
+        if (hoja && asa) {
+          asa.addEventListener("click", () => {
+            const abierto = hoja.classList.toggle("abierto");
+            asa.setAttribute("aria-expanded", String(abierto));
+          });
+        }
+
+        /* ----- Micro-interacción de onda (ripple) ------------------------ */
+        if (!reducido) {
+          document.addEventListener("pointerdown", (event) => {
+            const objetivo = event.target.closest(".boton, .dock-boton, .dock-primario, .menu-item, .icono-boton, label.dock-boton");
+            if (!objetivo || objetivo.disabled) return;
+            const caja = objetivo.getBoundingClientRect();
+            if (!caja.width) return;
+            const onda = document.createElement("span");
+            onda.className = "onda";
+            const tam = Math.max(caja.width, caja.height);
+            onda.style.width = onda.style.height = tam + "px";
+            onda.style.left = event.clientX - caja.left - tam / 2 + "px";
+            onda.style.top = event.clientY - caja.top - tam / 2 + "px";
+            objetivo.append(onda);
+            setTimeout(() => onda.remove(), 620);
+          });
+        }
+
+        /* ----- Estado inicial -------------------------------------------- */
+        mostrar("escaner", { silencioso: true });
+        requestAnimationFrame(moverIndicador);
+        renderAnalitica();
+      })();
+    </script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/mapa.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
@@ -213,7 +790,12 @@
           modalTitulo: document.getElementById("modal-titulo"),
           modalDetalle: document.getElementById("modal-detalle"),
           modalFoto: document.getElementById("modal-foto"),
-          modalCerrar: document.getElementById("modal-cerrar")
+          modalCerrar: document.getElementById("modal-cerrar"),
+          resumenTotal: document.getElementById("resumen-total"),
+          resumenCategorias: document.getElementById("resumen-categorias"),
+          resumenUltimo: document.getElementById("resumen-ultimo"),
+          marcadorBadge: document.getElementById("marcador-badge"),
+          cargador: document.getElementById("cargador")
         };
 
         let model = null;
@@ -253,7 +835,7 @@
         function resetResult() {
           lastResult = null;
           elements.resultIcon.innerHTML = '<i class="bx bx-recycle"></i>';
-          elements.resultLabel.textContent = "Aún no lo sabemos";
+          elements.resultLabel.textContent = "Todavía sin datos";
           elements.confidence.textContent = "";
           elements.speak.classList.add("hidden");
           elements.canvas.classList.add("hidden");
@@ -540,7 +1122,7 @@
           if (canvas.height !== alto) canvas.height = alto;
           const context = canvas.getContext("2d", { willReadFrequently: true });
           context.setTransform(1, 0, 0, 1, 0, 0);
-          context.fillStyle = "#e7f6c8";
+          context.fillStyle = "#0A0E13";
           context.fillRect(0, 0, ancho, alto);
           context.save();
           if (source === elements.video && stream && facingMode === "user") {
@@ -549,20 +1131,70 @@
           }
           context.drawImage(source, 0, 0, ancho, alto);
           context.restore();
-          context.lineWidth = 4;
-          context.font = "700 18px Outfit, sans-serif";
-          context.textBaseline = "top";
           for (const caja of cajas) {
-            context.strokeStyle = caja.registrada ? "#8a6a12" : "#1f7a34";
-            context.strokeRect(caja.x, caja.y, caja.w, caja.h);
-            const texto = caja.registrada ? "ya registrada" : `botella ${Math.round(caja.score * 100)}%`;
-            const ancho = context.measureText(texto).width;
-            const y = caja.y > 26 ? caja.y - 26 : caja.y;
-            context.fillStyle = caja.registrada ? "#8a6a12" : "#1f7a34";
-            context.fillRect(caja.x, y, ancho + 12, 24);
-            context.fillStyle = "#f7fff2";
-            context.fillText(texto, caja.x + 6, y + 3);
+            const color = caja.registrada ? "#F5B942" : "#2DD4A0";
+            const grosor = Math.max(3, Math.round(ancho / 320));
+            context.save();
+            context.shadowColor = color;
+            context.shadowBlur = 16;
+            context.strokeStyle = color;
+            context.lineWidth = grosor;
+            rutaRedondeada(context, caja.x, caja.y, caja.w, caja.h, 14);
+            context.stroke();
+            context.restore();
+            const largo = Math.min(caja.w, caja.h) * 0.22;
+            context.strokeStyle = color;
+            context.lineWidth = grosor + 2;
+            context.lineCap = "round";
+            const esquinas = [
+              [caja.x, caja.y, 1, 1],
+              [caja.x + caja.w, caja.y, -1, 1],
+              [caja.x, caja.y + caja.h, 1, -1],
+              [caja.x + caja.w, caja.y + caja.h, -1, -1]
+            ];
+            for (const esquina of esquinas) {
+              context.beginPath();
+              context.moveTo(esquina[0] + esquina[2] * largo, esquina[1]);
+              context.lineTo(esquina[0], esquina[1]);
+              context.lineTo(esquina[0], esquina[1] + esquina[3] * largo);
+              context.stroke();
+            }
+            const texto = caja.registrada ? "Ya registrada" : `Botella ${Math.round(caja.score * 100)}%`;
+            const fuente = Math.max(14, Math.round(ancho / 48));
+            context.font = `600 ${fuente}px Inter, sans-serif`;
+            const anchoTexto = context.measureText(texto).width;
+            const altoChip = fuente + 14;
+            const anchoChip = anchoTexto + 30;
+            let chipX = caja.x;
+            let chipY = caja.y - altoChip - 8;
+            if (chipY < 4) chipY = caja.y + 8;
+            if (chipX + anchoChip > ancho - 4) chipX = Math.max(4, ancho - anchoChip - 4);
+            context.save();
+            context.shadowColor = "rgba(0, 0, 0, .4)";
+            context.shadowBlur = 12;
+            context.fillStyle = color;
+            rutaRedondeada(context, chipX, chipY, anchoChip, altoChip, altoChip / 2);
+            context.fill();
+            context.restore();
+            context.beginPath();
+            context.arc(chipX + 13, chipY + altoChip / 2, Math.max(3, fuente * 0.28), 0, Math.PI * 2);
+            context.fillStyle = "#04130E";
+            context.fill();
+            context.fillStyle = "#04130E";
+            context.textBaseline = "middle";
+            context.fillText(texto, chipX + 24, chipY + altoChip / 2 + 1);
           }
+        }
+
+        function rutaRedondeada(context, x, y, w, h, r) {
+          const radio = Math.max(0, Math.min(r, w / 2, h / 2));
+          context.beginPath();
+          context.moveTo(x + radio, y);
+          context.arcTo(x + w, y, x + w, y + h, radio);
+          context.arcTo(x + w, y + h, x, y + h, radio);
+          context.arcTo(x, y + h, x, y, radio);
+          context.arcTo(x, y, x + w, y, radio);
+          context.closePath();
         }
 
         function cajasDesdeRastros() {
@@ -924,6 +1556,22 @@
           elements.inventoryTotal.textContent = String(total);
           const marcador = document.getElementById("marcador-total");
           if (marcador) marcador.textContent = String(total);
+          if (elements.marcadorBadge) {
+            elements.marcadorBadge.textContent = String(total);
+            elements.marcadorBadge.classList.toggle("hidden", entries.length === 0);
+          }
+          if (elements.resumenTotal) elements.resumenTotal.textContent = String(total);
+          if (elements.resumenCategorias) {
+            const categorias = new Set(entries.map((item) => item.etiqueta));
+            elements.resumenCategorias.textContent = String(categorias.size);
+          }
+          if (elements.resumenUltimo) {
+            const ultimo = entries[0];
+            const cuandoUltimo = ultimo ? new Date(ultimo.fecha) : null;
+            elements.resumenUltimo.textContent = cuandoUltimo && !Number.isNaN(cuandoUltimo.getTime())
+              ? cuandoUltimo.toLocaleString("es", { dateStyle: "short", timeStyle: "short" })
+              : "—";
+          }
           elements.historyList.replaceChildren();
           const empty = entries.length === 0;
           elements.historyEmpty.classList.toggle("hidden", !empty);
@@ -1018,9 +1666,11 @@
             if (stream) iniciarConteoCamara();
             else if (archivoVideo && selectedImage) await contarVideo();
             else if (previewUrl && selectedImage) await clasificarActual();
-            else setStatus("Listo. La cámara y el video registran solos, y solo si es una botella.");
+            else setStatus("Todo preparado. La cámara y el video guardan los registros por sí mismos, únicamente cuando se identifica una botella.");
+            if (elements.cargador) elements.cargador.classList.add("hidden");
           } catch (error) {
             console.error("No se pudo cargar el modelo:", error);
+            if (elements.cargador) elements.cargador.classList.add("hidden");
             setStatus("No se pudieron cargar las comprobaciones de IA. Revisa tu conexión y recarga la página.", true);
           }
         }
@@ -1174,12 +1824,12 @@
           installPrompt = null;
           elements.installApp.classList.add("hidden");
           elements.installApp.classList.remove("inline-flex");
-          elements.pwaStatus.textContent = "Botellas IA ya está instalada en este dispositivo.";
+          elements.pwaStatus.textContent = "Clasificador ya está instalada en este dispositivo.";
         });
         if ("serviceWorker" in navigator && location.protocol !== "file:") {
           navigator.serviceWorker.register("./service-worker.js")
             .then(() => {
-              elements.pwaStatus.textContent = "App instalable · tras la primera carga, los recursos se guardan para usarla sin conexión.";
+              elements.pwaStatus.textContent = "Puedes instalarla como aplicación · después de la primera carga guarda lo necesario para funcionar sin internet.";
             })
             .catch((error) => {
               console.error("No se pudo registrar el modo PWA:", error);

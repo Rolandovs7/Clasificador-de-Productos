@@ -15,6 +15,7 @@
   if (!mapaNodo || !window.L) return;
 
   const mapa = L.map(mapaNodo).setView([0, 0], 2);
+  window.__clasificadorMapa = mapa;
   setTimeout(() => mapa.invalidateSize(), 200);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
@@ -25,7 +26,7 @@
   function decir(texto, esError) {
     if (!estado) return;
     estado.textContent = texto;
-    estado.style.color = esError ? (document.body.classList.contains("tablero") ? "#ffb4b4" : "#9b2c2c") : "";
+    estado.classList.toggle("mapa-error", Boolean(esError));
   }
 
   function escapar(texto) {
