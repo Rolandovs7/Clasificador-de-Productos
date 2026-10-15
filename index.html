@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0B0F14">
     <meta name="color-scheme" content="dark light">
-    <meta name="description" content="Clasificador: cuenta botellas con la cámara, una foto o un video y guarda el inventario en este dispositivo.">
+    <meta name="description" content="Clasificador: clasifica y cuenta productos con la cámara, una foto o un video y guarda el inventario en este dispositivo.">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Clasificador">
-    <meta property="og:description" content="Cuenta botellas de plástico y guarda el inventario en el mismo dispositivo.">
+    <meta property="og:description" content="Clasifica y cuenta productos por categoría y guarda el inventario en el mismo dispositivo.">
     <meta property="og:image" content="assets/logo-hero.png">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -30,6 +30,9 @@
             <span class="marca-texto"><strong>Clasificador</strong><small>panel de inventario</small></span>
           </a>
           <div class="marca-acciones">
+            <button id="abrir-ajustes" class="icono-boton" type="button" aria-label="Ajustes de categorías" title="Ajustes de categorías">
+              <i class="bx bx-cog" aria-hidden="true"></i>
+            </button>
             <button id="ver-bienvenida" class="icono-boton" type="button" aria-label="Ver la presentación" title="Ver la presentación">
               <i class="bx bx-slideshow" aria-hidden="true"></i>
             </button>
@@ -54,8 +57,8 @@
         </nav>
 
         <div class="lateral-pie">
-          <p class="marcador" aria-label="Botellas acumuladas">
-            <i class="bx bx-recycle" aria-hidden="true"></i>
+          <p class="marcador" aria-label="Productos acumulados">
+            <i class="bx bx-package" aria-hidden="true"></i>
             <span>Total</span><strong id="marcador-total">0</strong>
           </p>
           <button id="install-app" type="button" class="boton boton-fantasma hidden">
@@ -68,8 +71,8 @@
         <section id="clasificador" class="vista vista-activa" data-view="escaner" aria-labelledby="escaner-titulo">
           <header class="vista-cabecera">
             <p class="etiqueta"><i class="bx bx-scan" aria-hidden="true"></i> Escáner</p>
-            <h1 id="escaner-titulo">Cuenta tus <span class="texto-degradado">botellas</span></h1>
-            <p>Usa la cámara, una foto o un video. Si salen dos botellas distintas, entran las dos. La imagen no sale de tu dispositivo.</p>
+            <h1 id="escaner-titulo">Clasifica y cuenta tus <span class="texto-degradado">productos</span></h1>
+            <p>Apunta la cámara, sube una foto o un video: cada tipo de producto se registra por separado. La imagen no sale de tu dispositivo.</p>
           </header>
 
           <div class="escaner-grid">
@@ -93,6 +96,7 @@
                   <span>Admite imágenes JPG, PNG o WEBP, videos MP4 y cámara en directo</span>
                 </div>
                 <div id="camera-tag" class="live-badge hidden"><span class="live-punto" aria-hidden="true"></span>EN VIVO</div>
+                <div id="conteo-categorias" class="conteo-categorias hidden" aria-live="polite"></div>
                 <div id="conteo-vivo" class="conteo-flotante hidden">
                   <span class="conteo-chip"><i class="bx bx-show" aria-hidden="true"></i>En vista <strong id="en-vista">0</strong></span>
                   <span class="conteo-chip"><i class="bx bx-check-circle" aria-hidden="true"></i>En esta toma <strong id="en-toma">0</strong></span>
@@ -137,7 +141,7 @@
             <aside class="resultado-columna">
               <section class="panel resultado" aria-labelledby="result-heading">
                 <p id="result-heading" class="etiqueta">Detección</p>
-                <div id="result-icon" class="resultado-icono" aria-hidden="true"><i class="bx bx-recycle"></i></div>
+                <div id="result-icon" class="resultado-icono" aria-hidden="true"><i class="bx bx-scan"></i></div>
                 <p id="result-label" class="resultado-etiqueta">Todavía sin datos</p>
                 <p id="result-confidence" class="resultado-confianza"></p>
                 <button id="speak-result" type="button" class="boton boton-suave hidden" aria-label="Escuchar el resultado">
@@ -159,7 +163,7 @@
           <header class="vista-cabecera">
             <p class="etiqueta"><i class="bx bx-package" aria-hidden="true"></i> Inventario</p>
             <h1 id="inventario-titulo">Tu <span class="texto-degradado">inventario</span></h1>
-            <p>Cada botella registrada en este dispositivo. Puedes corregir la cantidad, borrar filas o exportar los datos.</p>
+            <p>Cada producto registrado en este dispositivo, agrupado por categoría. Puedes corregir la cantidad, borrar filas o exportar los datos.</p>
           </header>
 
           <div class="resumen">
@@ -170,7 +174,7 @@
               </div>
               <span class="kpi-titulo">Total de productos</span>
               <strong id="resumen-total" class="kpi-numero">0</strong>
-              <small>botellas registradas</small>
+              <small>unidades registradas</small>
               <svg class="spark" data-spark="total" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
                 <path class="spark-area"></path><path class="spark-line"></path>
               </svg>
@@ -182,10 +186,19 @@
               </div>
               <span class="kpi-titulo">Categorías distintas</span>
               <strong id="resumen-categorias" class="kpi-numero">0</strong>
-              <small>tipos detectados</small>
+              <small>tipos con registros</small>
               <svg class="spark" data-spark="categorias" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
                 <path class="spark-area"></path><path class="spark-line"></path>
               </svg>
+            </article>
+            <article class="kpi">
+              <div class="kpi-cabecera">
+                <span class="kpi-icono"><i class="bx bx-trophy" aria-hidden="true"></i></span>
+                <span class="chip chip-neutro">top</span>
+              </div>
+              <span class="kpi-titulo">Categoría con más</span>
+              <strong id="resumen-top" class="kpi-numero kpi-fecha">—</strong>
+              <small>unidades acumuladas</small>
             </article>
             <article class="kpi">
               <div class="kpi-cabecera">
@@ -212,29 +225,54 @@
                 <h2>Categorías</h2>
               </header>
               <ul id="categorias" class="categorias" aria-label="Totales por categoría"></ul>
-              <p id="categorias-vacio" class="micro-vacio">Registra tu primera botella para ver las categorías aquí.</p>
+              <p id="categorias-vacio" class="micro-vacio">Registra tu primer producto para ver las categorías aquí.</p>
+            </section>
+            <section class="panel cuadro cuadro-ancho">
+              <header class="cuadro-cabecera">
+                <h2>Unidades por categoría</h2>
+                <span class="chip chip-neutro">con color propio</span>
+              </header>
+              <div id="grafico-categorias" class="grafico grafico-categorias" role="img" aria-label="Gráfico de barras con las unidades por categoría"></div>
+              <p id="grafico-categorias-vacio" class="micro-vacio">Sin datos todavía. Cada categoría tendrá su propia barra de color.</p>
             </section>
           </div>
 
           <div class="cabecera-fila">
             <h2>Registros <span class="contador" id="inventory-total">0</span></h2>
             <div class="acciones">
+              <button id="agregar-producto" type="button" class="boton boton-suave"><i class="bx bx-plus" aria-hidden="true"></i>Agregar producto</button>
               <button id="export-json" type="button" class="boton boton-suave hidden"><i class="bx bx-download" aria-hidden="true"></i>JSON</button>
               <button id="export-csv" type="button" class="boton boton-suave hidden"><i class="bx bx-spreadsheet" aria-hidden="true"></i>CSV</button>
               <button id="clear-history" type="button" class="boton boton-peligro hidden"><i class="bx bx-trash" aria-hidden="true"></i>Vaciar</button>
             </div>
           </div>
 
+          <div class="historial-filtros">
+            <label class="historial-busqueda">
+              <i class="bx bx-search" aria-hidden="true"></i>
+              <span class="sr-only">Buscar en los registros</span>
+              <input id="buscar-historial" type="search" placeholder="Buscar por categoría…" aria-label="Buscar por categoría en los registros">
+            </label>
+            <label class="historial-categoria">
+              <span class="sr-only">Filtrar por categoría</span>
+              <select id="filtro-categoria" aria-label="Filtrar registros por categoría">
+                <option value="">Todas las categorías</option>
+              </select>
+            </label>
+          </div>
+
           <div id="history-empty" class="vacio hidden">
             <img class="vacio-ilustracion" src="assets/logo.png" alt="" width="160" height="160">
             <p class="vacio-titulo">Tu inventario está vacío</p>
-            <p class="vacio-texto">Aún no has escaneado nada. Cuando registres una botella aparecerá aquí.</p>
+            <p class="vacio-texto">Aún no has escaneado nada. Cuando registres un producto aparecerá aquí.</p>
           </div>
+
+          <p id="history-filter-empty" class="micro-vacio hidden">Ningún registro coincide con el filtro o la búsqueda.</p>
 
           <div class="tabla-cabecera" aria-hidden="true">
             <span></span><span>Registro</span><span>Confianza</span><span>Cant.</span><span></span>
           </div>
-          <ul id="history-list" class="tabla-botellas" aria-label="Inventario de botellas"></ul>
+          <ul id="history-list" class="tabla-botellas" aria-label="Inventario de productos"></ul>
         </section>
 
         <section id="mapa-basureros" class="vista" data-view="mapa" hidden aria-labelledby="mapa-titulo">
@@ -271,6 +309,9 @@
               <span aria-hidden="true"></span>
             </button>
             <p id="mapa-estado" class="mapa-estado">Todavía no hay una búsqueda.</p>
+            <button id="mapa-reintentar" type="button" class="boton boton-suave mapa-reintentar hidden">
+              <i class="bx bx-refresh" aria-hidden="true"></i>Reintentar
+            </button>
             <ul id="mapa-lista" class="mapa-lista" aria-label="Lugares encontrados"></ul>
           </div>
         </section>
@@ -286,10 +327,65 @@
     <div id="registro-modal" class="modal" hidden role="status" aria-live="polite" aria-labelledby="modal-titulo">
       <div class="modal-caja glass">
         <p class="etiqueta">Inventario</p>
-        <h3 id="modal-titulo">Botellas registradas</h3>
-        <img id="modal-foto" alt="Encuadre con las botellas marcadas" class="hidden">
+        <h3 id="modal-titulo">Productos registrados</h3>
+        <img id="modal-foto" alt="Encuadre con los productos marcados" class="hidden">
         <p id="modal-detalle" class="modal-detalle"></p>
         <button id="modal-cerrar" type="button" class="boton boton-primario">Continuar</button>
+      </div>
+    </div>
+
+    <div id="agregar-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="agregar-titulo">
+      <div class="modal-caja glass">
+        <p class="etiqueta">Manual</p>
+        <h3 id="agregar-titulo">Agregar producto</h3>
+        <label class="campo-modal">
+          <span>Categoría</span>
+          <select id="agregar-categoria"></select>
+        </label>
+        <label class="campo-modal">
+          <span>Cantidad</span>
+          <input id="agregar-cantidad" type="number" min="1" step="1" value="1" inputmode="numeric">
+        </label>
+        <div class="modal-acciones">
+          <button id="agregar-cancelar" type="button" class="boton boton-fantasma">Cancelar</button>
+          <button id="agregar-guardar" type="button" class="boton boton-primario">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ajustes" class="ajustes" hidden role="dialog" aria-modal="true" aria-labelledby="ajustes-titulo">
+      <div class="ajustes-caja glass">
+        <button id="ajustes-cerrar" class="icono-boton ajustes-cerrar" type="button" aria-label="Cerrar los ajustes">
+          <i class="bx bx-x" aria-hidden="true"></i>
+        </button>
+        <p class="etiqueta"><i class="bx bx-cog" aria-hidden="true"></i> Ajustes</p>
+        <h2 id="ajustes-titulo">Categorías que quieres detectar</h2>
+        <p class="ajustes-sub">Marca solo lo que te interesa. Menos categorías activas hacen la detección más rápida y precisa.</p>
+
+        <div class="ajustes-sensibilidad">
+          <div class="ajustes-sensibilidad-cabecera">
+            <label for="sensibilidad">Sensibilidad mínima</label>
+            <output id="sensibilidad-valor" for="sensibilidad">45 %</output>
+          </div>
+          <input id="sensibilidad" type="range" min="0.3" max="0.8" step="0.01" value="0.45" aria-describedby="sensibilidad-ayuda">
+          <p id="sensibilidad-ayuda" class="ajustes-ayuda">Más baja detecta más objetos pero puede equivocarse; más alta exige más seguridad.</p>
+        </div>
+
+        <div class="ajustes-acciones">
+          <button id="categorias-todas" type="button" class="boton boton-suave"><i class="bx bx-check-double" aria-hidden="true"></i>Activar todas</button>
+          <button id="categorias-reset" type="button" class="boton boton-fantasma"><i class="bx bx-reset" aria-hidden="true"></i>Restablecer</button>
+        </div>
+
+        <label class="ajustes-busqueda">
+          <i class="bx bx-search" aria-hidden="true"></i>
+          <span class="sr-only">Buscar categoría</span>
+          <input id="ajustes-buscar" type="search" placeholder="Buscar una categoría…" aria-label="Buscar una categoría">
+        </label>
+
+        <ul id="ajustes-lista" class="ajustes-lista" aria-label="Lista de categorías"></ul>
+        <p id="ajustes-vacio" class="micro-vacio hidden">Ninguna categoría coincide con la búsqueda.</p>
+
+        <p class="ajustes-pie"><span id="ajustes-contador">0 activas</span> · se guardan en este dispositivo</p>
       </div>
     </div>
 
@@ -303,11 +399,11 @@
           <span class="hero-barrido" aria-hidden="true"></span>
         </div>
         <p class="etiqueta"><i class="bx bx-party" aria-hidden="true"></i> Bienvenido</p>
-        <h2 id="bienvenida-titulo">Clasifica y cuenta tu <span class="texto-degradado">inventario</span> con la cámara</h2>
-        <p class="bienvenida-sub">Apunta, registra y guarda cada botella sin subir tus fotos a ningún sitio. Todo queda en tu dispositivo.</p>
+        <h2 id="bienvenida-titulo">Clasifica y cuenta tus <span class="texto-degradado">productos</span> con la cámara</h2>
+        <p class="bienvenida-sub">Apunta, registra y guarda cada producto por categoría sin subir tus fotos a ningún sitio. Todo queda en tu dispositivo.</p>
         <div class="bienvenida-chips">
           <span class="chip-funcion"><i class="bx bx-brain" aria-hidden="true"></i>Detección con IA</span>
-          <span class="chip-funcion"><i class="bx bx-package" aria-hidden="true"></i>Inventario automático</span>
+          <span class="chip-funcion"><i class="bx bx-category" aria-hidden="true"></i>Inventario por categoría</span>
           <span class="chip-funcion"><i class="bx bx-lock-alt" aria-hidden="true"></i>Funciona sin subir tus fotos</span>
         </div>
         <button id="bienvenida-empezar" class="boton boton-primario boton-grande" type="button">
@@ -318,6 +414,7 @@
 
     <div id="toast-zona" class="toast-zona" aria-live="polite" aria-atomic="true"></div>
 
+    <script src="js/categorias.js"></script>
     <script>
       /* ======================================================================
          Capa de presentación: pie, tema, navegación, analítica visual,
@@ -337,17 +434,119 @@
         const reducido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const CLAVE_TEMA = "clasificador-tema-v1";
         const CLAVE_BIENVENIDA = "clasificador-bienvenida-v1";
-        const CLAVE_INVENTARIO = "botellas-ia-inventario-v1";
+        const CLAVE_INVENTARIO_V2 = "clasificador-inventario-v2";
+        const CLAVE_INVENTARIO_V1 = "botellas-ia-inventario-v1";
+        const categoria = (clase) => window.CATEGORIA_POR_CLASE[clase] || null;
 
-        /* ----- Lectura (solo lectura) del inventario para gráficas -------- */
+        /* ----- Inventario v2: categorías + historial --------------------- */
+        /* Estructura:
+           { version: 2,
+             categorias: { "<clase>": { nombre, total } },
+             historial: [ { id, fecha, clase, categoria, cantidad,
+                            confianzaPromedio, bboxes } ] }
+           Si existe el inventario antiguo v1, se importa como Botella y se
+           conserva sin borrar hasta que el usuario lo decida. */
+        function inventarioVacio() {
+          return { version: 2, categorias: {}, historial: [] };
+        }
+
+        function normalizarHistorial(item) {
+          if (!item || typeof item !== "object") return null;
+          const clase = typeof item.clase === "string" && item.clase ? item.clase : "bottle";
+          const cat = categoria(clase);
+          const nombre = typeof item.categoria === "string" && item.categoria
+            ? item.categoria
+            : (cat ? cat.nombre : "Botella");
+          const cantidad = Number(item.cantidad);
+          return {
+            id: typeof item.id === "string" ? item.id : "reg-" + Math.random().toString(36).slice(2),
+            fecha: typeof item.fecha === "string" ? item.fecha : new Date().toISOString(),
+            clase,
+            categoria: nombre,
+            cantidad: Number.isFinite(cantidad) && cantidad > 0 ? Math.round(cantidad) : 0,
+            confianzaPromedio: Number.isFinite(Number(item.confianzaPromedio)) ? Number(item.confianzaPromedio) : 0,
+            bboxes: Array.isArray(item.bboxes) ? item.bboxes : []
+          };
+        }
+
+        function normalizarInventario(datos) {
+          const salida = inventarioVacio();
+          if (!datos || typeof datos !== "object") return salida;
+          if (datos.categorias && typeof datos.categorias === "object") {
+            for (const [clase, valor] of Object.entries(datos.categorias)) {
+              const total = Number(valor && valor.total != null ? valor.total : valor);
+              if (!Number.isFinite(total) || total <= 0) continue;
+              const cat = categoria(clase);
+              salida.categorias[clase] = {
+                nombre: (valor && valor.nombre) || (cat ? cat.nombre : clase),
+                total: Math.round(total)
+              };
+            }
+          }
+          if (Array.isArray(datos.historial)) {
+            salida.historial = datos.historial.map(normalizarHistorial).filter(Boolean);
+          }
+          return salida;
+        }
+
+        function desdeV1(viejo) {
+          const salida = inventarioVacio();
+          if (!Array.isArray(viejo)) return salida;
+          for (const item of viejo) {
+            const registro = normalizarHistorial({
+              id: item && item.id,
+              fecha: item && item.fecha,
+              clase: "bottle",
+              categoria: (item && item.etiqueta) || "Botella",
+              cantidad: item && item.cantidad,
+              confianzaPromedio: item && item.confianzaPromedio,
+              bboxes: item && item.bboxes
+            });
+            if (!registro || registro.cantidad <= 0) continue;
+            salida.historial.push(registro);
+            const acumulado = salida.categorias.bottle || { nombre: "Botella", total: 0 };
+            acumulado.total += registro.cantidad;
+            salida.categorias.bottle = acumulado;
+          }
+          return salida;
+        }
+
         function leerInventario() {
           try {
-            const datos = JSON.parse(localStorage.getItem(CLAVE_INVENTARIO) || "[]");
-            return Array.isArray(datos) ? datos : [];
+            const crudo = localStorage.getItem(CLAVE_INVENTARIO_V2);
+            if (crudo) return normalizarInventario(JSON.parse(crudo));
           } catch (error) {
-            return [];
+            console.warn("Inventario v2 ilegible:", error);
           }
+          try {
+            const viejo = JSON.parse(localStorage.getItem(CLAVE_INVENTARIO_V1) || "[]");
+            if (Array.isArray(viejo) && viejo.length) {
+              const migrado = desdeV1(viejo);
+              localStorage.setItem(CLAVE_INVENTARIO_V2, JSON.stringify(migrado));
+              return migrado;
+            }
+          } catch (error) {
+            console.warn("No se pudo migrar el inventario antiguo:", error);
+          }
+          return inventarioVacio();
         }
+
+        function guardarInventario(inventario) {
+          localStorage.setItem(CLAVE_INVENTARIO_V2, JSON.stringify(inventario));
+        }
+
+        function borrarInventario() {
+          localStorage.removeItem(CLAVE_INVENTARIO_V2);
+        }
+
+        window.__clasificadorInventario = {
+          leer: leerInventario,
+          guardar: guardarInventario,
+          borrar: borrarInventario,
+          vacio: inventarioVacio,
+          CLAVE_V2: CLAVE_INVENTARIO_V2,
+          CLAVE_V1: CLAVE_INVENTARIO_V1
+        };
 
         /* ----- Tema claro / oscuro --------------------------------------- */
         const botonTema = document.getElementById("alternar-tema");
@@ -457,7 +656,7 @@
 
         /* ----- Series de los últimos 7 días ------------------------------ */
         function serie7dias() {
-          const entradas = leerInventario();
+          const entradas = leerInventario().historial;
           const hoy = new Date();
           hoy.setHours(0, 0, 0, 0);
           const totales = new Array(7).fill(0);
@@ -470,7 +669,7 @@
             if (distancia < 0 || distancia > 6) continue;
             const pos = 6 - distancia;
             totales[pos] += Number(item.cantidad) || 0;
-            cats[pos].add(item.etiqueta || "Botella");
+            cats[pos].add(item.categoria || "Botella");
           }
           return { totales, categorias: cats.map((s) => s.size) };
         }
@@ -537,54 +736,114 @@
           cont.classList.toggle("opaco", !hayDatos);
         }
 
+        /* ----- Totales por categoría (dato base para tarjetas y barras) --- */
+        function totalesPorCategoria() {
+          const inventario = leerInventario();
+          const filas = [];
+          for (const [clase, valor] of Object.entries(inventario.categorias)) {
+            if (!valor || !(valor.total > 0)) continue;
+            const cat = categoria(clase);
+            filas.push({
+              clase,
+              nombre: valor.nombre || (cat ? cat.nombre : clase),
+              total: Number(valor.total) || 0,
+              icono: cat ? cat.icono : "bx-box",
+              color: cat ? cat.color : "#2DD4A0"
+            });
+          }
+          filas.sort((a, b) => b.total - a.total);
+          return filas;
+        }
+
         /* ----- Tarjetas por categoría ------------------------------------ */
         function renderCategorias() {
           const cont = document.getElementById("categorias");
           const vacio = document.getElementById("categorias-vacio");
           if (!cont) return;
-          const entradas = leerInventario();
-          const mapa = new Map();
-          for (const item of entradas) {
-            const nombre = item.etiqueta || "Botella";
-            mapa.set(nombre, (mapa.get(nombre) || 0) + (Number(item.cantidad) || 0));
-          }
+          const filas = totalesPorCategoria();
           cont.replaceChildren();
-          if (!mapa.size) {
+          if (!filas.length) {
             if (vacio) vacio.classList.remove("hidden");
             return;
           }
           if (vacio) vacio.classList.add("hidden");
-          const total = Array.from(mapa.values()).reduce((a, b) => a + b, 0) || 1;
-          for (const [nombre, cantidad] of mapa) {
-            const porcentaje = Math.round((cantidad / total) * 100);
+          const total = filas.reduce((suma, fila) => suma + fila.total, 0) || 1;
+          for (const fila of filas) {
+            const porcentaje = Math.round((fila.total / total) * 100);
             const li = document.createElement("li");
             li.className = "categoria";
             const icono = document.createElement("span");
             icono.className = "categoria-icono";
-            icono.innerHTML = '<i class="bx bx-recycle" aria-hidden="true"></i>';
+            icono.style.setProperty("--cat", fila.color);
+            icono.innerHTML = '<i class="bx ' + fila.icono + '" aria-hidden="true"></i>';
             const info = document.createElement("div");
             info.className = "categoria-info";
             const titulo = document.createElement("strong");
-            titulo.textContent = nombre;
+            titulo.textContent = fila.nombre;
             const detalle = document.createElement("small");
-            detalle.textContent = cantidad + (cantidad === 1 ? " unidad · " : " unidades · ") + porcentaje + "%";
+            detalle.textContent = fila.total + (fila.total === 1 ? " unidad · " : " unidades · ") + porcentaje + "%";
             const barra = document.createElement("span");
             barra.className = "categoria-barra";
             const relleno = document.createElement("span");
             relleno.style.width = porcentaje + "%";
+            relleno.style.backgroundImage = "linear-gradient(90deg, " + fila.color + ", " + fila.color + "aa)";
             barra.append(relleno);
             info.append(titulo, detalle, barra);
             const chip = document.createElement("span");
             chip.className = "chip chip-acento";
-            chip.textContent = cantidad + "";
+            chip.style.color = fila.color;
+            chip.style.borderColor = fila.color + "66";
+            chip.textContent = fila.total + "";
             li.append(icono, info, chip);
             cont.append(li);
           }
         }
 
+        /* ----- Gráfico de barras por categoría (con color) --------------- */
+        function renderGraficoCategorias() {
+          const cont = document.getElementById("grafico-categorias");
+          const vacio = document.getElementById("grafico-categorias-vacio");
+          if (!cont) return;
+          const filas = totalesPorCategoria().slice(0, 8);
+          cont.replaceChildren();
+          if (!filas.length) {
+            if (vacio) vacio.classList.remove("hidden");
+            cont.classList.add("opaco");
+            return;
+          }
+          if (vacio) vacio.classList.add("hidden");
+          cont.classList.remove("opaco");
+          const max = Math.max(1, ...filas.map((fila) => fila.total));
+          filas.forEach((fila, i) => {
+            const barra = document.createElement("div");
+            barra.className = "barra";
+            barra.tabIndex = 0;
+            barra.setAttribute("aria-label", fila.nombre + ": " + fila.total + " unidades");
+            const pista = document.createElement("div");
+            pista.className = "barra-pista";
+            const relleno = document.createElement("span");
+            relleno.className = "barra-relleno";
+            relleno.style.backgroundImage = "linear-gradient(180deg, " + fila.color + ", " + fila.color + "aa)";
+            relleno.style.boxShadow = "0 6px 16px " + fila.color + "55";
+            relleno.style.setProperty("--alto", Math.max(8, Math.round((fila.total / max) * 100)) + "%");
+            relleno.style.setProperty("--retraso", i * 55 + "ms");
+            pista.append(relleno);
+            const tip = document.createElement("span");
+            tip.className = "barra-tip";
+            tip.textContent = fila.nombre + " · " + fila.total;
+            const etiqueta = document.createElement("i");
+            etiqueta.className = "bx " + fila.icono + " barra-dia";
+            etiqueta.style.color = fila.color;
+            etiqueta.setAttribute("aria-hidden", "true");
+            barra.append(tip, pista, etiqueta);
+            cont.append(barra);
+          });
+        }
+
         function renderAnalitica() {
           renderGrafico();
           renderCategorias();
+          renderGraficoCategorias();
           actualizarSparklines();
         }
 
@@ -623,21 +882,8 @@
           }, 3200);
         }
 
-        const modal = document.getElementById("registro-modal");
-        const modalTitulo = document.getElementById("modal-titulo");
-        if (modal) {
-          new MutationObserver(() => {
-            if (modal.hidden) return;
-            const texto = (modalTitulo && modalTitulo.textContent ? modalTitulo.textContent : "").trim();
-            const coincide = texto.match(/(\d+)/);
-            if (coincide) {
-              const n = coincide[1];
-              mostrarToast("+" + n + " " + (n === "1" ? "Botella registrada" : "Botellas registradas"), "ok");
-            } else if (/ya estaban/i.test(texto)) {
-              mostrarToast("Ya estaban registradas", "neutro");
-            }
-          }).observe(modal, { attributes: true, attributeFilter: ["hidden"] });
-        }
+        /* El registro multi-categoría avisa desde el script de detección. */
+        window.__clasificadorToast = mostrarToast;
 
         /* ----- Pulso al incrementar los contadores en vivo --------------- */
         const enToma = document.getElementById("en-toma");
@@ -753,11 +999,46 @@
       (() => {
         "use strict";
 
+        /* ==================================================================
+           AJUSTES DE DETECCIÓN (todo lo afinable, en un solo bloque)
+           ------------------------------------------------------------------
+           INTERVALO_MS        Espera entre pasadas de detección con cámara en
+                               vivo. Más alto = menos gasto, más bajo = más
+                               reactivo. 700 ms mantiene fluido un portátil.
+           HITS_CAMARA         Nº de pasadas seguidas que debe verse un objeto
+                               (solo cámara) antes de registrarlo. En foto y
+                               video basta 1.
+           IOU_DUPLICADO       Solapamiento mínimo (0-1) entre dos cajas para
+                               considerarlas el mismo objeto y no duplicarlo.
+           UMBRAL_POCO_SEGURO  Por debajo de esta confianza el registro se
+                               marca como poco seguro.
+           UMBRAL_CONFIRMA_RED Confianza que exige la red propia (solo Botella)
+                               al revisar el recorte.
+           UMBRAL_BOTELLA_CAJA Confianza de COCO-SSD que ya acepta una Botella
+                               sin esperar a la red propia.
+           SENSIBILIDAD_*      Rango y valor por defecto del control de
+                               sensibilidad (confianza mínima de COCO-SSD).
+           MAX_CLASES_DETECTAR Tope de cajas por pasada (rendimiento).
+           Los mismos números se describen en el README.
+           ================================================================== */
         const SIZE = 640;
-        const INVENTORY_KEY = "botellas-ia-inventario-v1";
         const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+        const INTERVALO_MS = 700;
+        const HITS_CAMARA = 2;
+        const IOU_DUPLICADO = 0.45;
         const UMBRAL_POCO_SEGURO = 0.6;
-        const UMBRAL_BOTELLA = 0.4;
+        const UMBRAL_CONFIRMA_RED = 0.28;
+        const UMBRAL_BOTELLA_CAJA = 0.45;
+        const SENSIBILIDAD_MIN = 0.3;
+        const SENSIBILIDAD_MAX = 0.8;
+        const SENSIBILIDAD_DEFECTO = 0.45;
+        const MAX_CLASES_DETECTAR = 20;
+        const CLAVE_AJUSTES = "clasificador-ajustes-v1";
+
+        const catalogo = window.CATEGORIAS || [];
+        const catPorClase = window.CATEGORIA_POR_CLASE || {};
+        const almacen = window.__clasificadorInventario;
+
         const elements = {
           video: document.getElementById("video"),
           canvas: document.getElementById("canvas"),
@@ -778,11 +1059,13 @@
           pwaStatus: document.getElementById("pwa-status"),
           historyList: document.getElementById("history-list"),
           historyEmpty: document.getElementById("history-empty"),
+          historyFilterEmpty: document.getElementById("history-filter-empty"),
           clearHistory: document.getElementById("clear-history"),
           exportJson: document.getElementById("export-json"),
           exportCsv: document.getElementById("export-csv"),
           inventoryTotal: document.getElementById("inventory-total"),
           conteoVivo: document.getElementById("conteo-vivo"),
+          conteoCategorias: document.getElementById("conteo-categorias"),
           enVista: document.getElementById("en-vista"),
           enToma: document.getElementById("en-toma"),
           nuevaToma: document.getElementById("nueva-toma"),
@@ -793,10 +1076,66 @@
           modalCerrar: document.getElementById("modal-cerrar"),
           resumenTotal: document.getElementById("resumen-total"),
           resumenCategorias: document.getElementById("resumen-categorias"),
+          resumenTop: document.getElementById("resumen-top"),
           resumenUltimo: document.getElementById("resumen-ultimo"),
           marcadorBadge: document.getElementById("marcador-badge"),
-          cargador: document.getElementById("cargador")
+          cargador: document.getElementById("cargador"),
+          marcadorTotal: document.getElementById("marcador-total"),
+          filtroCategoria: document.getElementById("filtro-categoria"),
+          buscarHistorial: document.getElementById("buscar-historial"),
+          agregarProducto: document.getElementById("agregar-producto"),
+          agregarModal: document.getElementById("agregar-modal"),
+          agregarCategoria: document.getElementById("agregar-categoria"),
+          agregarCantidad: document.getElementById("agregar-cantidad"),
+          agregarCancelar: document.getElementById("agregar-cancelar"),
+          agregarGuardar: document.getElementById("agregar-guardar"),
+          abrirAjustes: document.getElementById("abrir-ajustes"),
+          ajustes: document.getElementById("ajustes"),
+          ajustesCerrar: document.getElementById("ajustes-cerrar"),
+          ajustesBuscar: document.getElementById("ajustes-buscar"),
+          ajustesLista: document.getElementById("ajustes-lista"),
+          ajustesVacio: document.getElementById("ajustes-vacio"),
+          ajustesContador: document.getElementById("ajustes-contador"),
+          sensibilidad: document.getElementById("sensibilidad"),
+          sensibilidadValor: document.getElementById("sensibilidad-valor"),
+          categoriasTodas: document.getElementById("categorias-todas"),
+          categoriasReset: document.getElementById("categorias-reset")
         };
+
+        /* ----- Estado de los ajustes (categorías activas + sensibilidad) -- */
+        function leerAjustes() {
+          const salida = {
+            activas: new Set(window.CLASES_ACTIVAS_POR_DEFECTO || []),
+            sensibilidad: SENSIBILIDAD_DEFECTO
+          };
+          try {
+            const crudo = JSON.parse(localStorage.getItem(CLAVE_AJUSTES) || "null");
+            if (crudo && Array.isArray(crudo.activas)) {
+              const validas = crudo.activas.filter((clase) => catPorClase[clase]);
+              if (validas.length) salida.activas = new Set(validas);
+            }
+            if (crudo && Number.isFinite(Number(crudo.sensibilidad))) {
+              salida.sensibilidad = Math.min(SENSIBILIDAD_MAX, Math.max(SENSIBILIDAD_MIN, Number(crudo.sensibilidad)));
+            }
+          } catch (error) {
+            console.warn("No se pudieron leer los ajustes:", error);
+          }
+          return salida;
+        }
+        const ajustes = leerAjustes();
+        let categoriasActivas = ajustes.activas;
+        let sensibilidad = ajustes.sensibilidad;
+
+        function guardarAjustes() {
+          try {
+            localStorage.setItem(CLAVE_AJUSTES, JSON.stringify({
+              activas: Array.from(categoriasActivas),
+              sensibilidad
+            }));
+          } catch (error) {
+            console.warn("No se pudieron guardar los ajustes:", error);
+          }
+        }
 
         let model = null;
         let bottleDetector = null;
@@ -811,11 +1150,13 @@
         let rastros = [];
         let cajasVisibles = [];
         let tomadas = 0;
+        let tomadasPorClase = new Map();
         let detectando = false;
         let conteoActivo = false;
         let forzarSiguiente = false;
         let ultimaFirma = "";
-        let cantidadModal = 0;
+        let filtroTexto = "";
+        let filtroClase = "";
         let buclePintura = 0;
         let bucleDeteccion = 0;
         const buffer = document.createElement("canvas");
@@ -834,7 +1175,7 @@
 
         function resetResult() {
           lastResult = null;
-          elements.resultIcon.innerHTML = '<i class="bx bx-recycle"></i>';
+          elements.resultIcon.innerHTML = '<i class="bx bx-scan"></i>';
           elements.resultLabel.textContent = "Todavía sin datos";
           elements.confidence.textContent = "";
           elements.speak.classList.add("hidden");
@@ -850,14 +1191,14 @@
         function rejectUnsupportedImage(personDetected) {
           resetResult();
           elements.resultIcon.innerHTML = `<i class="bx ${personDetected ? "bx-user" : "bx-search-alt-2"}"></i>`;
-          elements.resultLabel.textContent = personDetected ? "¡Foto fuera de juego!" : "No encontramos botellas";
+          elements.resultLabel.textContent = personDetected ? "Solo salió una persona" : "No encontramos productos";
           elements.confidence.textContent = personDetected
-            ? "Detectamos una persona, pero este juego solo cuenta botellas."
-            : "La imagen debe mostrar claramente al menos una botella.";
+            ? "La persona no cuenta como producto. Activa esa categoría en Ajustes si la quieres."
+            : "La imagen debe mostrar algo de una categoría activa.";
           setStatus(
             personDetected
-              ? "Esta imagen muestra una persona y ninguna botella. Prueba con una foto de botellas."
-              : "No detectamos la clase bottle. Acércate, mejora la luz o prueba otra foto.",
+              ? "Esta imagen muestra una persona y ningún producto activo. Prueba con otra foto o activa más categorías en Ajustes."
+              : "No detectamos ninguna categoría activa. Acércate, mejora la luz, prueba otra foto o activa más categorías en Ajustes.",
             true
           );
         }
@@ -865,6 +1206,7 @@
         function stopCamera() {
           pararConteo();
           elements.conteoVivo.classList.add("hidden");
+          if (elements.conteoCategorias) elements.conteoCategorias.classList.add("hidden");
           elements.nuevaToma.classList.add("hidden");
           elements.canvas.classList.add("hidden");
           if (stream) {
@@ -1086,7 +1428,7 @@
 
         function firmaDe(cajas) {
           return cajas
-            .map((caja) => [Math.round(caja.x / 16), Math.round(caja.y / 16), Math.round(caja.w / 16), Math.round(caja.h / 16)].join("x"))
+            .map((caja) => caja.clase + ":" + [Math.round(caja.x / 16), Math.round(caja.y / 16), Math.round(caja.w / 16), Math.round(caja.h / 16)].join("x"))
             .sort()
             .join("|");
         }
@@ -1095,8 +1437,35 @@
           rastros = [];
           cajasVisibles = [];
           tomadas = 0;
-          cantidadModal = 0;
+          tomadasPorClase = new Map();
           actualizarChip(0);
+          renderConteoCategorias();
+        }
+
+        function colorDe(clase) {
+          const cat = catPorClase[clase];
+          return cat ? cat.color : "#2DD4A0";
+        }
+
+        function nombreDe(clase) {
+          const cat = catPorClase[clase];
+          return cat ? cat.nombre : clase;
+        }
+
+        function pluralDe(nombre, n) {
+          if (n === 1) return nombre;
+          const especiales = {
+            "Vaso de vino": "Vasos de vino",
+            "Tazón": "Tazones",
+            "Ratón": "Ratones",
+            "Portátil": "Portátiles",
+            "Control remoto": "Controles remotos",
+            "Cepillo de dientes": "Cepillos de dientes",
+            "Tijeras": "Tijeras",
+            "Paraguas": "Paraguas"
+          };
+          if (especiales[nombre]) return especiales[nombre];
+          return /[aeiouáéíóú]$/i.test(nombre) ? nombre + "s" : nombre + "es";
         }
 
         function pararConteo() {
@@ -1132,7 +1501,7 @@
           context.drawImage(source, 0, 0, ancho, alto);
           context.restore();
           for (const caja of cajas) {
-            const color = caja.registrada ? "#F5B942" : "#2DD4A0";
+            const color = colorDe(caja.clase);
             const grosor = Math.max(3, Math.round(ancho / 320));
             context.save();
             context.shadowColor = color;
@@ -1159,7 +1528,7 @@
               context.lineTo(esquina[0], esquina[1] + esquina[3] * largo);
               context.stroke();
             }
-            const texto = caja.registrada ? "Ya registrada" : `Botella ${Math.round(caja.score * 100)}%`;
+            const texto = `✓ ${nombreDe(caja.clase)} ${Math.round(caja.score * 100)}%`;
             const fuente = Math.max(14, Math.round(ancho / 48));
             context.font = `600 ${fuente}px Inter, sans-serif`;
             const anchoTexto = context.measureText(texto).width;
@@ -1201,6 +1570,7 @@
           return rastros
             .filter((rastro) => rastro.missed === 0)
             .map((rastro) => ({
+              clase: rastro.clase,
               x: rastro.x,
               y: rastro.y,
               w: rastro.w,
@@ -1214,11 +1584,11 @@
           const usadas = new Set();
           for (const rastro of rastros) {
             let mejor = -1;
-          cajas.forEach((caja, indice) => {
-            if (usadas.has(indice) || !solapan(rastro, caja)) return;
-            mejor = indice;
-          });
-          if (mejor >= 0) {
+            cajas.forEach((caja, indice) => {
+              if (usadas.has(indice) || rastro.clase !== caja.clase || !solapan(rastro, caja)) return;
+              mejor = indice;
+            });
+            if (mejor >= 0) {
               usadas.add(mejor);
               const caja = cajas[mejor];
               rastro.x = caja.x;
@@ -1234,10 +1604,11 @@
           }
           cajas.forEach((caja, indice) => {
             if (usadas.has(indice)) return;
-            const repetida = rastros.some((rastro) => rastro.registrado && solapan(rastro, caja));
+            const repetida = rastros.some((rastro) => rastro.registrado && rastro.clase === caja.clase && solapan(rastro, caja));
             if (repetida) return;
             rastros.push({
               id: createId(),
+              clase: caja.clase,
               x: caja.x,
               y: caja.y,
               w: caja.w,
@@ -1250,7 +1621,7 @@
             });
           });
           rastros = rastros.filter((rastro) => rastro.registrado || rastro.missed < 8);
-          const hitsMinimos = video || forzarSiguiente ? 1 : 2;
+          const hitsMinimos = video || forzarSiguiente ? 1 : HITS_CAMARA;
           forzarSiguiente = false;
           const nuevas = [];
           for (const rastro of rastros) {
@@ -1262,22 +1633,54 @@
           return nuevas;
         }
 
-        function mostrarResultado(cantidad, confianza) {
-          lastResult = { etiqueta: "Botella", confidence: confianza, cantidad };
-          elements.resultIcon.innerHTML = '<i class="bx bx-recycle"></i>';
-          elements.resultLabel.textContent = cantidad === 1 ? "1 botella en el inventario" : `${cantidad} botellas en el inventario`;
+        /* Contadores flotantes por categoría detectada en la toma. */
+        function renderConteoCategorias(pulsos) {
+          const cont = elements.conteoCategorias;
+          if (!cont) return;
+          cont.replaceChildren();
+          if (!tomadasPorClase.size) {
+            cont.classList.add("hidden");
+            return;
+          }
+          cont.classList.remove("hidden");
+          const orden = Array.from(tomadasPorClase.entries()).sort((a, b) => b[1] - a[1]);
+          for (const [clase, cantidad] of orden) {
+            const cat = catPorClase[clase];
+            const color = cat ? cat.color : "#2DD4A0";
+            const chip = document.createElement("span");
+            chip.className = "conteo-chip conteo-cat";
+            chip.style.borderColor = color + "66";
+            const icono = document.createElement("i");
+            icono.className = "bx " + (cat ? cat.icono : "bx-box");
+            icono.style.color = color;
+            icono.setAttribute("aria-hidden", "true");
+            const fuerte = document.createElement("strong");
+            fuerte.textContent = String(cantidad);
+            const nombre = document.createElement("span");
+            nombre.className = "conteo-cat-nombre";
+            nombre.textContent = cat ? cat.nombre : clase;
+            chip.append(icono, fuerte, nombre);
+            if (pulsos && pulsos.has(clase)) {
+              chip.classList.add("pulso");
+            }
+            cont.append(chip);
+          }
+        }
+
+        function mostrarResultado(resumen, total, confianza) {
+          const texto = resumen.join(", ");
+          lastResult = { etiqueta: texto, confidence: confianza, cantidad: total, resumen: texto };
+          elements.resultIcon.innerHTML = '<i class="bx bx-check-circle"></i>';
+          elements.resultLabel.textContent = `${total} ${total === 1 ? "producto" : "productos"} en el inventario`;
           const porcentaje = Math.round(confianza * 100);
-          elements.confidence.textContent = `${cantidad} ${cantidad === 1 ? "nueva" : "nuevas"} · ${porcentaje}%${confianza < UMBRAL_POCO_SEGURO ? " · poco seguro" : ""}`;
+          elements.confidence.textContent = `${texto} · ${porcentaje}%${confianza < UMBRAL_POCO_SEGURO ? " · poco seguro" : ""}`;
           elements.speak.classList.remove("hidden");
         }
 
-        function abrirModal(cantidad, detalle) {
-          if (cantidad > 0 && !elements.modal.hidden) cantidadModal += cantidad;
-          else cantidadModal = cantidad;
-          const total = cantidadModal;
+        function abrirModal(resumen, total, detalle) {
           elements.modalTitulo.textContent = total === 0
-            ? "Esas botellas ya estaban"
-            : total === 1 ? "1 botella registrada" : `${total} botellas registradas`;
+            ? "Esos productos ya estaban"
+            : resumen + " " + (total === 1 ? "registrado" : "registrados");
           elements.modalDetalle.textContent = detalle;
           try {
             elements.modalFoto.src = elements.canvas.toDataURL("image/jpeg", 0.72);
@@ -1290,35 +1693,61 @@
 
         function cerrarModal() {
           elements.modal.hidden = true;
-          cantidadModal = 0;
         }
 
         function registrarNuevas(nuevas, silencio) {
-          const records = nuevas.map((rastro) => ({
-            id: rastro.id,
-            fecha: new Date().toISOString(),
-            cantidad: 1,
-            confianzaPromedio: Math.round(rastro.score * 10000) / 10000,
-            bboxes: [{
-              x: Math.round(rastro.x),
-              y: Math.round(rastro.y),
-              width: Math.round(rastro.w),
-              height: Math.round(rastro.h),
-              score: Math.round(rastro.score * 10000) / 10000
-            }],
-            etiqueta: "Botella"
-          }));
-          writeInventory([...records, ...readInventory()]);
+          if (!nuevas.length) return;
+          const porClase = new Map();
+          for (const rastro of nuevas) {
+            if (!porClase.has(rastro.clase)) porClase.set(rastro.clase, []);
+            porClase.get(rastro.clase).push(rastro);
+          }
+          const inv = almacen.leer();
+          const registros = [];
+          const resumen = [];
+          const pulsos = new Set();
+          for (const [clase, lista] of porClase) {
+            const nombre = nombreDe(clase);
+            const confianza = lista.reduce((suma, rastro) => suma + rastro.score, 0) / lista.length;
+            registros.push({
+              id: createId(),
+              fecha: new Date().toISOString(),
+              clase,
+              categoria: nombre,
+              cantidad: lista.length,
+              confianzaPromedio: Math.round(confianza * 10000) / 10000,
+              bboxes: lista.map((rastro) => ({
+                x: Math.round(rastro.x),
+                y: Math.round(rastro.y),
+                width: Math.round(rastro.w),
+                height: Math.round(rastro.h),
+                score: Math.round(rastro.score * 10000) / 10000
+              }))
+            });
+            const acumulado = inv.categorias[clase] || { nombre, total: 0 };
+            acumulado.nombre = nombre;
+            acumulado.total += lista.length;
+            inv.categorias[clase] = acumulado;
+            resumen.push("+" + lista.length + " " + pluralDe(nombre, lista.length));
+            pulsos.add(clase);
+            tomadasPorClase.set(clase, (tomadasPorClase.get(clase) || 0) + lista.length);
+          }
+          inv.historial = [...registros, ...inv.historial];
+          almacen.guardar(inv);
           renderHistory();
-          tomadas += records.length;
+          tomadas += nuevas.length;
           actualizarChip(cajasVisibles.length);
-          const confianza = records.reduce((suma, item) => suma + item.confianzaPromedio, 0) / records.length;
-          mostrarResultado(records.length, confianza);
-          const detalle = records.length === 1
-            ? "Quedó guardada en este dispositivo. Si sigue en cámara, no se vuelve a contar."
-            : "Cada una es un registro. Si siguen a la vista, no se duplican.";
-          if (!silencio) abrirModal(records.length, detalle);
-          setStatus(records.length === 1 ? "1 botella nueva en el inventario." : `${records.length} botellas nuevas en el inventario.`);
+          renderConteoCategorias(pulsos);
+          const totalNuevas = nuevas.length;
+          const confianza = registros.reduce((suma, r) => suma + r.confianzaPromedio * r.cantidad, 0) / totalNuevas;
+          mostrarResultado(resumen, totalNuevas, confianza);
+          const textoResumen = resumen.join(", ");
+          if (window.__clasificadorToast) {
+            window.__clasificadorToast(textoResumen + " " + (totalNuevas === 1 ? "registrado" : "registrados"), "ok");
+          }
+          const detalle = "Quedó guardado en este dispositivo. Cada categoría se cuenta por separado y no se repite mientras siga a la vista.";
+          if (!silencio) abrirModal(textoResumen, totalNuevas, detalle);
+          setStatus(textoResumen + " en el inventario.");
         }
 
         async function puntajeRecorte(source, caja) {
@@ -1362,31 +1791,44 @@
           }
         }
 
+        /* La red propia (modelo_botellas) solo revisa la clase Botella. */
         async function confirmarCajas(source, cajas) {
           if (!model || !cajas.length) return cajas;
           const aceptadas = [];
           for (const caja of cajas) {
             const puntaje = await puntajeRecorte(source, caja);
-            if (puntaje >= 0.28 || caja.score >= 0.45) {
+            if (puntaje >= UMBRAL_CONFIRMA_RED || caja.score >= UMBRAL_BOTELLA_CAJA) {
               aceptadas.push({ ...caja, score: Math.max(caja.score, puntaje) });
             }
           }
           return aceptadas;
         }
 
-        async function leerBotellas(source) {
+        async function leerObjetos(source) {
           dibujarEnCanvas(buffer, source, []);
-          const detecciones = await bottleDetector.detect(buffer, 20, UMBRAL_BOTELLA);
-          const persona = detecciones.some((item) => item.class === "person" && item.score >= 0.45);
-          const cajas = juntarCajas(detecciones
-            .filter((item) => item.class === "bottle" && item.score >= UMBRAL_BOTELLA)
-            .map((item) => ({
+          const confianza = Math.max(SENSIBILIDAD_MIN, Math.min(SENSIBILIDAD_MAX, sensibilidad));
+          const detecciones = await bottleDetector.detect(buffer, MAX_CLASES_DETECTAR, confianza);
+          const persona = detecciones.some((item) => item.class === "person" && item.score >= UMBRAL_POCO_SEGURO);
+          const porClase = new Map();
+          for (const item of detecciones) {
+            if (item.score < confianza) continue;
+            if (!categoriasActivas.has(item.class)) continue;
+            if (!porClase.has(item.class)) porClase.set(item.class, []);
+            porClase.get(item.class).push({
+              clase: item.class,
               x: item.bbox[0],
               y: item.bbox[1],
               w: item.bbox[2],
               h: item.bbox[3],
               score: item.score
-            })));
+            });
+          }
+          const cajas = [];
+          for (const [clase, lista] of porClase) {
+            let juntas = juntarCajas(lista);
+            if (clase === "bottle") juntas = await confirmarCajas(source, juntas);
+            for (const caja of juntas) cajas.push(caja);
+          }
           return { cajas, persona };
         }
 
@@ -1394,8 +1836,8 @@
           if (!bottleDetector || detectando) return;
           detectando = true;
           try {
-            const leidas = await leerBotellas(source);
-            const cajas = await confirmarCajas(buffer, leidas.cajas);
+            const leidas = await leerObjetos(source);
+            const cajas = leidas.cajas;
             const persona = leidas.persona;
             if (opciones.foto) {
               await registrarFoto(cajas, persona, source);
@@ -1406,14 +1848,14 @@
             actualizarChip(cajasVisibles.length);
             if (!nuevas.length) {
               if (!cajas.length && persona && opciones.aviso) {
-                setStatus("Se ve una persona, no una botella. Solo se registra la clase bottle.", true);
+                setStatus("Se ve una persona, no un producto. Ajusta las categorías o la sensibilidad en Ajustes.", true);
               }
               return;
             }
             registrarNuevas(nuevas, Boolean(opciones.silencio));
           } catch (error) {
             console.error("No se pudo contar:", error);
-            setStatus(error.message || "No se pudo contar las botellas.", true);
+            setStatus(error.message || "No se pudieron contar los productos.", true);
           } finally {
             detectando = false;
           }
@@ -1434,13 +1876,14 @@
           if (firma && firma === ultimaFirma) {
             cajasVisibles = cajas.map((caja) => ({ ...caja, registrada: true }));
             dibujarEnCanvas(elements.canvas, source, cajasVisibles);
-            setStatus("Esas mismas botellas ya están en el inventario.", true);
-            abrirModal(0, "No se agregó nada. Esas botellas ya estaban registradas.");
+            setStatus("Esos mismos productos ya están en el inventario.", true);
+            abrirModal("", 0, "No se agregó nada. Esos productos ya estaban registrados.");
             return;
           }
           ultimaFirma = firma;
           const nuevas = cajas.map((caja) => ({
             id: createId(),
+            clase: caja.clase,
             x: caja.x,
             y: caja.y,
             w: caja.w,
@@ -1476,10 +1919,10 @@
           const ciclo = async () => {
             if (!conteoActivo || !stream) return;
             await detectarYRegistrar(elements.video, { aviso: true });
-            if (conteoActivo && stream) bucleDeteccion = setTimeout(ciclo, 700);
+            if (conteoActivo && stream) bucleDeteccion = setTimeout(ciclo, INTERVALO_MS);
           };
           bucleDeteccion = setTimeout(ciclo, 400);
-          setStatus("Contando en vivo. Solo botellas, y cada una una sola vez.");
+          setStatus("Contando en vivo. Cada producto se cuenta una sola vez.");
         }
 
         async function contarVideo() {
@@ -1506,14 +1949,14 @@
             dibujarEnCanvas(elements.canvas, elements.video, cajasVisibles);
             elements.video.classList.add("hidden");
             elements.canvas.classList.remove("hidden");
-            setStatus(`Video ${Math.min(100, Math.round((tiempo / duracion) * 100))} %. Botellas nuevas: ${tomadas}.`);
+            setStatus(`Video ${Math.min(100, Math.round((tiempo / duracion) * 100))} %. Productos nuevos: ${tomadas}.`);
           }
           conteoActivo = false;
           if (tomadas === 0) {
-            setStatus("En ese video no se confirmó ninguna botella.", true);
-            abrirModal(0, "No se registró nada. Solo entra lo que el detector marca como bottle.");
+            setStatus("En ese video no se confirmó ningún producto.", true);
+            abrirModal("", 0, "No se registró nada. Revisa las categorías activas o la sensibilidad en Ajustes.");
           } else {
-            abrirModal(tomadas, "Cada botella del video quedó una sola vez. Si la misma sale en varios segundos, no se duplica.");
+            abrirModal("Resumen", tomadas, "Cada producto del video quedó una sola vez. Si el mismo sale en varios segundos, no se duplica.");
           }
         }
 
@@ -1531,40 +1974,70 @@
           await detectarYRegistrar(selectedImage, { foto: true, aviso: true });
         }
 
-        function readInventory() {
-          try {
-            const saved = JSON.parse(localStorage.getItem(INVENTORY_KEY) || "[]");
-            if (!Array.isArray(saved)) return [];
-            return saved.filter((item) =>
-              item && typeof item.id === "string" && typeof item.fecha === "string" &&
-              typeof item.etiqueta === "string" && Number.isFinite(item.cantidad) &&
-              Number.isFinite(item.confianzaPromedio) && Array.isArray(item.bboxes)
-            );
-          } catch (error) {
-            console.warn("No se pudo leer el inventario local:", error);
-            return [];
+        /* Reconstruye los totales por categoría a partir del historial. */
+        function recalcularCategorias(inv) {
+          const categorias = {};
+          for (const item of inv.historial) {
+            const clase = item.clase || item.etiqueta || "desconocido";
+            const nombre = item.categoria || nombreDe(clase);
+            if (!categorias[clase]) categorias[clase] = { nombre, total: 0 };
+            categorias[clase].nombre = nombre;
+            categorias[clase].total += item.cantidad;
           }
+          inv.categorias = categorias;
+          return inv;
         }
 
-        function writeInventory(entries) {
-          localStorage.setItem(INVENTORY_KEY, JSON.stringify(entries));
+        function actualizarFiltroCategoria(inv) {
+          const select = elements.filtroCategoria;
+          if (!select) return;
+          const anterior = filtroClase;
+          select.replaceChildren();
+          const todas = document.createElement("option");
+          todas.value = "";
+          todas.textContent = "Todas las categorías";
+          select.append(todas);
+          const clases = Object.keys(inv.categorias).sort((a, b) =>
+            (inv.categorias[b].total - inv.categorias[a].total) || nombreDe(a).localeCompare(nombreDe(b), "es")
+          );
+          for (const clase of clases) {
+            const option = document.createElement("option");
+            option.value = clase;
+            option.textContent = `${nombreDe(clase)} (${inv.categorias[clase].total})`;
+            select.append(option);
+          }
+          select.value = inv.categorias[anterior] ? anterior : "";
+          filtroClase = select.value;
+        }
+
+        function renderResumenTop(inv) {
+          if (!elements.resumenTop) return;
+          const clases = Object.keys(inv.categorias);
+          if (!clases.length) {
+            elements.resumenTop.textContent = "—";
+            return;
+          }
+          let mejor = clases[0];
+          for (const clase of clases) {
+            if (inv.categorias[clase].total > inv.categorias[mejor].total) mejor = clase;
+          }
+          elements.resumenTop.textContent = nombreDe(mejor);
         }
 
         function renderHistory() {
-          const entries = readInventory();
+          const inv = almacen.leer();
+          const entries = inv.historial;
           const total = entries.reduce((sum, item) => sum + item.cantidad, 0);
           elements.inventoryTotal.textContent = String(total);
-          const marcador = document.getElementById("marcador-total");
+          const marcador = elements.marcadorTotal || document.getElementById("marcador-total");
           if (marcador) marcador.textContent = String(total);
           if (elements.marcadorBadge) {
             elements.marcadorBadge.textContent = String(total);
             elements.marcadorBadge.classList.toggle("hidden", entries.length === 0);
           }
           if (elements.resumenTotal) elements.resumenTotal.textContent = String(total);
-          if (elements.resumenCategorias) {
-            const categorias = new Set(entries.map((item) => item.etiqueta));
-            elements.resumenCategorias.textContent = String(categorias.size);
-          }
+          if (elements.resumenCategorias) elements.resumenCategorias.textContent = String(Object.keys(inv.categorias).length);
+          renderResumenTop(inv);
           if (elements.resumenUltimo) {
             const ultimo = entries[0];
             const cuandoUltimo = ultimo ? new Date(ultimo.fecha) : null;
@@ -1572,28 +2045,47 @@
               ? cuandoUltimo.toLocaleString("es", { dateStyle: "short", timeStyle: "short" })
               : "—";
           }
+          actualizarFiltroCategoria(inv);
+
+          const texto = filtroTexto.trim().toLowerCase();
+          const visibles = entries.filter((item) => {
+            if (filtroClase && (item.clase || "") !== filtroClase) return false;
+            if (!texto) return true;
+            return (item.categoria || "").toLowerCase().includes(texto) || (item.clase || "").toLowerCase().includes(texto);
+          });
+
           elements.historyList.replaceChildren();
-          const empty = entries.length === 0;
-          elements.historyEmpty.classList.toggle("hidden", !empty);
-          elements.clearHistory.classList.toggle("hidden", empty);
-          elements.exportJson.classList.toggle("hidden", empty);
-          elements.exportCsv.classList.toggle("hidden", empty);
-          for (const item of entries) {
+          const vacioTotal = entries.length === 0;
+          const vacioFiltro = !vacioTotal && visibles.length === 0;
+          elements.historyEmpty.classList.toggle("hidden", !vacioTotal);
+          if (elements.historyFilterEmpty) elements.historyFilterEmpty.classList.toggle("hidden", !vacioFiltro);
+          elements.clearHistory.classList.toggle("hidden", vacioTotal);
+          elements.exportJson.classList.toggle("hidden", vacioTotal);
+          elements.exportCsv.classList.toggle("hidden", vacioTotal);
+
+          for (const item of visibles) {
+            const clase = item.clase || item.etiqueta || "desconocido";
+            const cat = catPorClase[clase];
+            const color = cat ? cat.color : "#2DD4A0";
             const row = document.createElement("li");
             row.className = "fila";
             row.dataset.id = item.id;
             const ficha = document.createElement("span");
             ficha.className = "ficha";
+            ficha.style.color = color;
+            ficha.style.borderColor = color + "55";
+            ficha.style.background = `radial-gradient(circle at 50% 30%, ${color}40, ${color}10)`;
             ficha.setAttribute("aria-hidden", "true");
-            ficha.innerHTML = '<i class="bx bx-recycle"></i>';
+            ficha.innerHTML = `<i class="bx ${cat ? cat.icono : "bx-box"}"></i>`;
             const description = document.createElement("div");
             const title = document.createElement("strong");
-            title.textContent = item.etiqueta;
+            title.textContent = item.categoria || nombreDe(clase);
             const date = document.createElement("small");
             const cuando = new Date(item.fecha);
-            date.textContent = Number.isNaN(cuando.getTime())
+            const unidades = item.cantidad === 1 ? "1 unidad" : `${item.cantidad} unidades`;
+            date.textContent = (Number.isNaN(cuando.getTime())
               ? item.fecha
-              : cuando.toLocaleString("es", { dateStyle: "short", timeStyle: "short" });
+              : cuando.toLocaleString("es", { dateStyle: "short", timeStyle: "short" })) + " · " + unidades;
             description.append(title, date);
             const certainty = document.createElement("span");
             certainty.className = "porcentaje";
@@ -1612,7 +2104,7 @@
             input.step = "1";
             input.value = String(item.cantidad);
             input.dataset.cantidad = "1";
-            input.setAttribute("aria-label", `Cantidad del registro ${item.fecha}`);
+            input.setAttribute("aria-label", `Cantidad de ${item.categoria || nombreDe(clase)}`);
             const remove = document.createElement("button");
             remove.type = "button";
             remove.dataset.accion = "eliminar";
@@ -1624,8 +2116,8 @@
         }
 
         function createId() {
-          if (crypto.randomUUID) return crypto.randomUUID();
-          return `botella-${Date.now()}`;
+          if (crypto.randomUUID) return "reg-" + crypto.randomUUID();
+          return `reg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         }
 
         async function classify() {
@@ -1637,7 +2129,7 @@
             await clasificarActual();
           } catch (error) {
             console.error("No se pudo registrar:", error);
-            setStatus(error.message || "No se pudo registrar las botellas.", true);
+            setStatus(error.message || "No se pudieron registrar los productos.", true);
           } finally {
             busy = false;
             elements.classify.disabled = !bottleDetector || !selectedImage;
@@ -1648,8 +2140,8 @@
         async function loadModel() {
           try {
             if (!window.tf) throw new Error("No se pudo cargar TensorFlow.js. Comprueba tu conexión e inténtalo de nuevo.");
-            if (!window.cocoSsd) throw new Error("No se pudo cargar el detector de botellas. Comprueba tu conexión e inténtalo de nuevo.");
-            setStatus("Cargando el detector de botellas y, si existe, tu red…");
+            if (!window.cocoSsd) throw new Error("No se pudo cargar el detector de productos. Comprueba tu conexión e inténtalo de nuevo.");
+            setStatus("Cargando el detector de productos y, si existe, tu red…");
             bottleDetector = await cocoSsd.load({ base: "mobilenet_v2" });
             model = null;
             try {
@@ -1666,7 +2158,7 @@
             if (stream) iniciarConteoCamara();
             else if (archivoVideo && selectedImage) await contarVideo();
             else if (previewUrl && selectedImage) await clasificarActual();
-            else setStatus("Todo preparado. La cámara y el video guardan los registros por sí mismos, únicamente cuando se identifica una botella.");
+            else setStatus("Todo preparado. La cámara y el video guardan los registros por sí mismos, únicamente cuando se identifica un producto.");
             if (elements.cargador) elements.cargador.classList.add("hidden");
           } catch (error) {
             console.error("No se pudo cargar el modelo:", error);
@@ -1725,14 +2217,17 @@
         elements.nuevaToma.addEventListener("click", () => {
           reiniciarRastros();
           ultimaFirma = "";
-          setStatus("Toma nueva. Las botellas de ahora se pueden registrar otra vez.");
+          setStatus("Toma nueva. Los productos de ahora se pueden registrar otra vez.");
         });
         elements.modalCerrar.addEventListener("click", cerrarModal);
         elements.modal.addEventListener("click", (event) => {
           if (event.target === elements.modal) cerrarModal();
         });
         document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape" && !elements.modal.hidden) cerrarModal();
+          if (event.key !== "Escape") return;
+          if (!elements.modal.hidden) cerrarModal();
+          if (elements.agregarModal && !elements.agregarModal.hidden) cerrarAgregar();
+          if (elements.ajustes && !elements.ajustes.hidden) cerrarAjustes();
         });
         elements.speak.addEventListener("click", () => {
           if (!lastResult || !("speechSynthesis" in window)) {
@@ -1743,7 +2238,7 @@
           const porcentaje = Math.round(lastResult.confidence * 100);
           const poco = lastResult.confidence < UMBRAL_POCO_SEGURO ? " El resultado es poco seguro." : "";
           const utterance = new SpeechSynthesisUtterance(
-            `Se contaron ${lastResult.cantidad} botellas. La inteligencia artificial cree que la imagen es ${lastResult.etiqueta}, con una confianza del ${porcentaje} por ciento.${poco}`
+            `Se registraron ${lastResult.cantidad} productos: ${lastResult.etiqueta}. Confianza del ${porcentaje} por ciento.${poco}`
           );
           utterance.lang = "es";
           window.speechSynthesis.speak(utterance);
@@ -1760,11 +2255,12 @@
             renderHistory();
             return;
           }
-          const entries = readInventory();
-          const item = entries.find((entry) => entry.id === row.dataset.id);
+          const inv = almacen.leer();
+          const item = inv.historial.find((entry) => entry.id === row.dataset.id);
           if (!item) return;
           item.cantidad = Math.round(cantidad);
-          writeInventory(entries);
+          recalcularCategorias(inv);
+          almacen.guardar(inv);
           renderHistory();
           setStatus("Cantidad actualizada en este dispositivo.");
         });
@@ -1773,13 +2269,16 @@
           if (!button) return;
           const row = button.closest("[data-id]");
           if (!row || !window.confirm("¿Borrar este registro del inventario?")) return;
-          writeInventory(readInventory().filter((entry) => entry.id !== row.dataset.id));
+          const inv = almacen.leer();
+          inv.historial = inv.historial.filter((entry) => entry.id !== row.dataset.id);
+          recalcularCategorias(inv);
+          almacen.guardar(inv);
           renderHistory();
           setStatus("Registro borrado de este dispositivo.");
         });
         elements.clearHistory.addEventListener("click", () => {
           try {
-            localStorage.removeItem(INVENTORY_KEY);
+            almacen.borrar();
             renderHistory();
             setStatus("Inventario borrado de este dispositivo.");
           } catch (error) {
@@ -1788,19 +2287,169 @@
           }
         });
         elements.exportJson.addEventListener("click", () => {
-          download("botellas-ia.json", JSON.stringify(readInventory(), null, 2), "application/json;charset=utf-8");
+          download("clasificador.json", JSON.stringify(almacen.leer(), null, 2), "application/json;charset=utf-8");
         });
         elements.exportCsv.addEventListener("click", () => {
-          const rows = readInventory().map((item) =>
-            [item.id, item.fecha, item.cantidad, item.confianzaPromedio, item.etiqueta, JSON.stringify(item.bboxes)]
-              .map(csvField).join(",")
-          );
-          download(
-            "botellas-ia.csv",
-            `\uFEFFid,fecha,cantidad,confianzaPromedio,etiqueta,bboxes\r\n${rows.join("\r\n")}`,
-            "text/csv;charset=utf-8"
-          );
+          const inv = almacen.leer();
+          const lineas = [];
+          lineas.push("CATEGORIAS");
+          lineas.push("clase,categoria,total");
+          for (const [clase, dato] of Object.entries(inv.categorias)) {
+            lineas.push([clase, dato.nombre, dato.total].map(csvField).join(","));
+          }
+          lineas.push("");
+          lineas.push("HISTORIAL");
+          lineas.push("id,fecha,clase,categoria,cantidad,confianzaPromedio,bboxes");
+          for (const item of inv.historial) {
+            lineas.push([item.id, item.fecha, item.clase || "", item.categoria || "", item.cantidad, item.confianzaPromedio, JSON.stringify(item.bboxes)].map(csvField).join(","));
+          }
+          download("clasificador.csv", "\uFEFF" + lineas.join("\r\n"), "text/csv;charset=utf-8");
         });
+        /* ----- Ajustes: categorías activas y sensibilidad ---------------- */
+        function abrirAjustes() {
+          elements.ajustes.hidden = false;
+          elements.sensibilidad.value = String(sensibilidad);
+          elements.sensibilidadValor.textContent = Math.round(sensibilidad * 100) + " %";
+          elements.ajustesBuscar.value = "";
+          renderAjustes();
+          elements.ajustesCerrar.focus();
+        }
+
+        function cerrarAjustes() {
+          elements.ajustes.hidden = true;
+          if (elements.abrirAjustes) elements.abrirAjustes.focus();
+        }
+
+        function renderAjustes() {
+          const texto = elements.ajustesBuscar.value.trim().toLowerCase();
+          elements.ajustesLista.replaceChildren();
+          let mostradas = 0;
+          for (const cat of catalogo) {
+            if (texto && !cat.nombre.toLowerCase().includes(texto) && !cat.clase.toLowerCase().includes(texto)) continue;
+            mostradas += 1;
+            const li = document.createElement("li");
+            li.className = "ajustes-fila";
+            const icono = document.createElement("i");
+            icono.className = "bx " + cat.icono;
+            icono.style.color = cat.color;
+            icono.setAttribute("aria-hidden", "true");
+            const nombre = document.createElement("span");
+            nombre.className = "ajustes-nombre";
+            nombre.textContent = cat.nombre;
+            const interruptor = document.createElement("label");
+            interruptor.className = "interruptor";
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.checked = categoriasActivas.has(cat.clase);
+            input.dataset.clase = cat.clase;
+            input.setAttribute("aria-label", "Detectar " + cat.nombre);
+            const pista = document.createElement("span");
+            pista.className = "interruptor-pista";
+            interruptor.append(input, pista);
+            li.append(icono, nombre, interruptor);
+            elements.ajustesLista.append(li);
+          }
+          elements.ajustesVacio.classList.toggle("hidden", mostradas > 0);
+          elements.ajustesContador.textContent = categoriasActivas.size + (categoriasActivas.size === 1 ? " activa" : " activas");
+        }
+
+        elements.abrirAjustes.addEventListener("click", abrirAjustes);
+        elements.ajustesCerrar.addEventListener("click", cerrarAjustes);
+        elements.ajustes.addEventListener("click", (event) => {
+          if (event.target === elements.ajustes) cerrarAjustes();
+        });
+        elements.ajustesBuscar.addEventListener("input", renderAjustes);
+        elements.ajustesLista.addEventListener("change", (event) => {
+          const input = event.target;
+          if (!(input instanceof HTMLInputElement) || !input.dataset.clase) return;
+          if (input.checked) categoriasActivas.add(input.dataset.clase);
+          else categoriasActivas.delete(input.dataset.clase);
+          guardarAjustes();
+          renderAjustes();
+        });
+        elements.categoriasTodas.addEventListener("click", () => {
+          categoriasActivas = new Set(catalogo.map((cat) => cat.clase));
+          guardarAjustes();
+          renderAjustes();
+        });
+        elements.categoriasReset.addEventListener("click", () => {
+          categoriasActivas = new Set(window.CLASES_ACTIVAS_POR_DEFECTO || []);
+          sensibilidad = SENSIBILIDAD_DEFECTO;
+          elements.sensibilidad.value = String(sensibilidad);
+          elements.sensibilidadValor.textContent = Math.round(sensibilidad * 100) + " %";
+          guardarAjustes();
+          renderAjustes();
+        });
+        elements.sensibilidad.addEventListener("input", () => {
+          sensibilidad = Math.min(SENSIBILIDAD_MAX, Math.max(SENSIBILIDAD_MIN, Number(elements.sensibilidad.value)));
+          elements.sensibilidadValor.textContent = Math.round(sensibilidad * 100) + " %";
+          guardarAjustes();
+        });
+
+        /* ----- Agregar producto manualmente ------------------------------ */
+        function poblarAgregar() {
+          elements.agregarCategoria.replaceChildren();
+          const clases = Object.keys(catPorClase).sort((a, b) => nombreDe(a).localeCompare(nombreDe(b), "es"));
+          for (const clase of clases) {
+            const option = document.createElement("option");
+            option.value = clase;
+            option.textContent = nombreDe(clase);
+            elements.agregarCategoria.append(option);
+          }
+        }
+
+        function abrirAgregar() {
+          poblarAgregar();
+          const usadas = Array.from(new Set(almacen.leer().historial.map((item) => item.clase)));
+          if (usadas.length) elements.agregarCategoria.value = usadas[0];
+          elements.agregarCantidad.value = "1";
+          elements.agregarModal.hidden = false;
+          elements.agregarCategoria.focus();
+        }
+
+        function cerrarAgregar() {
+          elements.agregarModal.hidden = true;
+          if (elements.agregarProducto) elements.agregarProducto.focus();
+        }
+
+        elements.agregarProducto.addEventListener("click", abrirAgregar);
+        elements.agregarCancelar.addEventListener("click", cerrarAgregar);
+        elements.agregarModal.addEventListener("click", (event) => {
+          if (event.target === elements.agregarModal) cerrarAgregar();
+        });
+        elements.agregarGuardar.addEventListener("click", () => {
+          const clase = elements.agregarCategoria.value;
+          const cantidad = Math.max(1, Math.round(Number(elements.agregarCantidad.value) || 1));
+          if (!clase || !catPorClase[clase]) return;
+          const nombre = nombreDe(clase);
+          const inv = almacen.leer();
+          inv.historial.unshift({
+            id: createId(),
+            fecha: new Date().toISOString(),
+            clase,
+            categoria: nombre,
+            cantidad,
+            confianzaPromedio: 1,
+            bboxes: []
+          });
+          recalcularCategorias(inv);
+          almacen.guardar(inv);
+          renderHistory();
+          cerrarAgregar();
+          if (window.__clasificadorToast) window.__clasificadorToast(`+${cantidad} ${pluralDe(nombre, cantidad)} agregado${cantidad === 1 ? "" : "s"}`, "ok");
+          setStatus(`${pluralDe(nombre, cantidad)} agregado${cantidad === 1 ? "" : "s"} al inventario.`);
+        });
+
+        /* ----- Filtros del historial ------------------------------------- */
+        elements.buscarHistorial.addEventListener("input", () => {
+          filtroTexto = elements.buscarHistorial.value;
+          renderHistory();
+        });
+        elements.filtroCategoria.addEventListener("change", () => {
+          filtroClase = elements.filtroCategoria.value;
+          renderHistory();
+        });
+
         window.addEventListener("beforeinstallprompt", (event) => {
           event.preventDefault();
           installPrompt = event;

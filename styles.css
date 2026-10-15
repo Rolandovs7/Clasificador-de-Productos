@@ -1122,6 +1122,7 @@ body.sin-scroll { overflow: hidden; }
 .hoja-asa span { width: 46px; height: 5px; border-radius: 999px; background: var(--borde-fuerte); margin-top: 12px; }
 .mapa-estado { color: var(--texto-2); margin: 4px 0 12px; }
 .mapa-estado.mapa-error { color: var(--error); }
+.mapa-reintentar { margin: 0 0 12px; }
 .mapa-lista { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .mapa-lista li {
   display: flex;
@@ -1339,6 +1340,190 @@ body.sin-scroll { overflow: hidden; }
 @keyframes consumir { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
 /* ==========================================================================
+   Multi-categoría: contadores, filtros, agregar y ajustes
+   ========================================================================== */
+
+/* Contadores por categoría dentro del visor */
+.conteo-categorias {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: min(64%, 260px);
+}
+.conteo-cat { padding: 6px 11px; font-size: .78rem; }
+.conteo-cat i { font-size: 1.05rem; }
+.conteo-cat-nombre { color: var(--texto-2); }
+
+/* Panel a todo el ancho para el gráfico por categoría */
+.cuadro-ancho { grid-column: 1 / -1; }
+
+/* Filtros del historial */
+.historial-filtros {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.historial-busqueda,
+.historial-categoria,
+.ajustes-busqueda {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  min-height: 46px;
+  border-radius: var(--radio-chico);
+  border: 1px solid var(--borde);
+  background: var(--campo);
+  color: var(--texto-2);
+}
+.historial-busqueda i,
+.ajustes-busqueda i { color: var(--acento); font-size: 1.15rem; flex: none; }
+.historial-busqueda input,
+.historial-categoria select,
+.ajustes-busqueda input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--texto);
+  font: inherit;
+  outline: none;
+}
+.historial-categoria select { cursor: pointer; }
+.historial-busqueda:focus-within,
+.historial-categoria:focus-within,
+.ajustes-busqueda:focus-within { border-color: var(--acento); }
+
+/* Campos del modal "Agregar producto" */
+.campo-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: .82rem;
+  color: var(--texto-2);
+}
+.campo-modal select,
+.campo-modal input {
+  min-height: 46px;
+  padding: 0 12px;
+  border-radius: var(--radio-chico);
+  border: 1px solid var(--borde);
+  background: var(--campo);
+  color: var(--texto);
+  font: inherit;
+}
+.campo-modal select:focus-visible,
+.campo-modal input:focus-visible { border-color: var(--acento); }
+.modal-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+/* Panel de ajustes */
+.ajustes {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow: auto;
+  background: rgba(4, 7, 10, .7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: fundido .2s ease;
+}
+.ajustes[hidden] { display: none; }
+.ajustes-caja {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 88vh;
+  overflow: auto;
+  padding: 26px;
+  border-radius: var(--radio-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--sombra-fuerte);
+}
+.ajustes-cerrar { position: absolute; top: 14px; right: 14px; }
+.ajustes-sub { color: var(--texto-2); font-size: .88rem; }
+.ajustes-sensibilidad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radio-chico);
+  border: 1px solid var(--borde);
+  background: var(--relleno-suave);
+}
+.ajustes-sensibilidad-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: .86rem;
+  font-weight: 600;
+}
+.ajustes-sensibilidad-cabecera output { color: var(--acento); font-variant-numeric: tabular-nums; }
+.ajustes-sensibilidad input[type="range"] { width: 100%; accent-color: var(--acento); }
+.ajustes-ayuda { color: var(--texto-2); font-size: .78rem; margin: 0; }
+.ajustes-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.ajustes-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: min(46vh, 420px);
+  overflow: auto;
+}
+.ajustes-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--relleno-suave);
+}
+.ajustes-fila > i { font-size: 1.25rem; flex: none; }
+.ajustes-nombre { flex: 1; min-width: 0; font-size: .9rem; }
+.ajustes-pie { color: var(--texto-2); font-size: .8rem; text-align: center; margin: 0; }
+
+/* Interruptor accesible */
+.interruptor { position: relative; display: inline-flex; flex: none; cursor: pointer; }
+.interruptor input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.interruptor-pista {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--pista);
+  border: 1px solid var(--borde);
+  transition: background var(--transicion), border-color var(--transicion);
+}
+.interruptor-pista::after {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 3px;
+  border-radius: 50%;
+  background: var(--texto-2);
+  transition: transform var(--transicion), background var(--transicion);
+}
+.interruptor input:checked + .interruptor-pista {
+  background-image: var(--degradado);
+  border-color: transparent;
+}
+.interruptor input:checked + .interruptor-pista::after { transform: translateX(18px); background: var(--acento-tinta); }
+.interruptor input:focus-visible + .interruptor-pista { box-shadow: 0 0 0 3px rgba(45, 212, 160, .35); }
+
+/* ==========================================================================
    Escritorio
    ========================================================================== */
 @media (min-width: 940px) {
@@ -1425,6 +1610,7 @@ body.sin-scroll { overflow: hidden; }
 
   .resumen { grid-template-columns: repeat(3, 1fr); }
   .analitica { grid-template-columns: 1.6fr 1fr; }
+  .grafico-categorias { height: 200px; }
   .mapa-contenedor { height: calc(100vh - 240px); min-height: 440px; }
   .mapa-hoja {
     position: static;
@@ -1455,6 +1641,9 @@ body.sin-scroll { overflow: hidden; }
   .tabla-cabecera span:nth-child(3) { display: none; }
   .fila { grid-template-columns: 40px minmax(0, 1fr) 58px 44px; }
   .fila .porcentaje { display: none; }
+  .historial-filtros { grid-template-columns: 1fr; }
+  .ajustes-caja { padding: 20px; }
+  .conteo-categorias { max-width: 78%; }
 }
 
 @media (hover: none) {

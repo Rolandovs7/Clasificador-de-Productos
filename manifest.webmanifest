@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Clasificador",
   "short_name": "Clasificador",
-  "description": "Cuenta botellas de plástico con la cámara, una foto o un video y guarda el inventario en este dispositivo.",
+  "description": "Clasifica y cuenta tus productos con la cámara, una foto o un video y guarda el inventario por categoría en este dispositivo.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

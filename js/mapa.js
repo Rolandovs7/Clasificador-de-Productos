@@ -6,12 +6,38 @@
 (function () {
   "use strict";
 
+  /* ----------------------------------------------------------------
+     Servidores Overpass, en orden de preferencia. Edita esta lista
+     para cambiar los espejos. El último que funcione se recuerda en
+     sessionStorage y se prueba primero en la siguiente búsqueda.
+     ---------------------------------------------------------------- */
+  const SERVIDORES_OVERPASS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter"
+  ];
+  const NOMINATIM = "https://nominatim.openstreetmap.org/search";
+
+  const TIMEOUT_MS = 15000;
+  /* Códigos que casi siempre son temporales del servidor. */
+  const CODIGOS_REINTENTABLES = [406, 429, 500, 502, 503, 504];
+  const CLAVE_SERVIDOR = "clasificador-mapa-servidor";
+  const CLAVE_CACHE = "clasificador-mapa-cache-";
+  const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+  const RADIO_M = 1200;
+
+  const AVISO_VPN = " Si usas VPN o un bloqueador, prueba desactivándolo para este sitio.";
+  const MENSAJE_SIN_INTERNET = "Parece que no hay internet." + AVISO_VPN;
+  const MENSAJE_SIN_SERVICIO = "El servicio del mapa no responde ahora mismo. Inténtalo en unos minutos." + AVISO_VPN;
+
   const mapaNodo = document.getElementById("mapa");
   const estado = document.getElementById("mapa-estado");
   const lista = document.getElementById("mapa-lista");
   const botonAqui = document.getElementById("buscar-basureros");
   const botonLugar = document.getElementById("buscar-lugar");
   const campo = document.getElementById("lugar-basureros");
+  const botonReintentar = document.getElementById("mapa-reintentar");
   if (!mapaNodo || !window.L) return;
 
   const mapa = L.map(mapaNodo).setView([0, 0], 2);
@@ -23,10 +49,17 @@
   }).addTo(mapa);
   const marcas = L.layerGroup().addTo(mapa);
 
+  /* Última búsqueda para poder reintentarla desde el aviso de error. */
+  let ultimaBusqueda = null;
+
   function decir(texto, esError) {
-    if (!estado) return;
-    estado.textContent = texto;
-    estado.classList.toggle("mapa-error", Boolean(esError));
+    if (estado) {
+      estado.textContent = texto;
+      estado.classList.toggle("mapa-error", Boolean(esError));
+    }
+    if (botonReintentar) {
+      botonReintentar.classList.toggle("hidden", !esError || !ultimaBusqueda);
+    }
   }
 
   function escapar(texto) {
@@ -93,22 +126,148 @@
     decir(puntos.length === 1 ? "1 lugar cerca." : puntos.length + " lugares cerca.");
   }
 
-  async function buscarAlrededor(lat, lon) {
-    decir("Buscando basureros cerca…");
-    const consulta = `[out:json][timeout:25];(node["amenity"="waste_basket"](around:1200,${lat},${lon});node["amenity"="waste_disposal"](around:1200,${lat},${lon});node["amenity"="recycling"](around:1200,${lat},${lon});way["amenity"="recycling"](around:1200,${lat},${lon}););out center;`;
-    const respuesta = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: consulta
-    });
-    if (!respuesta.ok) throw new Error("El mapa no respondió. Inténtalo de nuevo.");
-    const datos = await respuesta.json();
-    const puntos = (datos.elements || []).map((elemento) => {
+  /* ----- Orden de servidores y utilidades de red -------------------- */
+
+  function servidoresEnOrden() {
+    let recordado = null;
+    try {
+      recordado = sessionStorage.getItem(CLAVE_SERVIDOR);
+    } catch (error) {
+      recordado = null;
+    }
+    if (recordado && SERVIDORES_OVERPASS.indexOf(recordado) !== -1) {
+      return [recordado].concat(SERVIDORES_OVERPASS.filter((url) => url !== recordado));
+    }
+    return SERVIDORES_OVERPASS.slice();
+  }
+
+  function recordarServidor(url) {
+    try {
+      sessionStorage.setItem(CLAVE_SERVIDOR, url);
+    } catch (error) {
+      /* sessionStorage puede estar bloqueado; no es crítico. */
+    }
+  }
+
+  function fetchConTimeout(url, opciones) {
+    const controlador = new AbortController();
+    const temporizador = setTimeout(() => controlador.abort(), TIMEOUT_MS);
+    return fetch(url, Object.assign({}, opciones, { signal: controlador.signal }))
+      .finally(() => clearTimeout(temporizador));
+  }
+
+  function firmaZona(lat, lon) {
+    return Number(lat).toFixed(3) + "," + Number(lon).toFixed(3);
+  }
+
+  function leerCacheZona(firma) {
+    try {
+      const crudo = JSON.parse(localStorage.getItem(CLAVE_CACHE + firma) || "null");
+      if (crudo && Array.isArray(crudo.puntos) && crudo.puntos.length &&
+        Number.isFinite(crudo.guardado) && Date.now() - crudo.guardado < CACHE_TTL_MS) {
+        return crudo.puntos;
+      }
+    } catch (error) {
+      /* Datos viejos o corruptos: se ignoran. */
+    }
+    return null;
+  }
+
+  function guardarCacheZona(firma, puntos) {
+    try {
+      localStorage.setItem(CLAVE_CACHE + firma, JSON.stringify({ guardado: Date.now(), puntos }));
+    } catch (error) {
+      /* Sin espacio o bloqueado: no es crítico. */
+    }
+  }
+
+  function construirConsulta(lat, lon) {
+    return `[out:json][timeout:25];(node["amenity"="waste_basket"](around:${RADIO_M},${lat},${lon});node["amenity"="waste_disposal"](around:${RADIO_M},${lat},${lon});node["amenity"="recycling"](around:${RADIO_M},${lat},${lon});way["amenity"="recycling"](around:${RADIO_M},${lat},${lon}););out center;`;
+  }
+
+  function extraerPuntos(datos) {
+    return (datos.elements || []).map((elemento) => {
       const latitud = elemento.lat || (elemento.center && elemento.center.lat);
       const longitud = elemento.lon || (elemento.center && elemento.center.lon);
       if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) return null;
       return { lat: latitud, lon: longitud, nombre: titulo(elemento), tipo: tipoDe(elemento) };
     }).filter(Boolean);
-    pintar(puntos, [lat, lon]);
+  }
+
+  function mensajeDeFallo() {
+    return navigator.onLine === false ? MENSAJE_SIN_INTERNET : MENSAJE_SIN_SERVICIO;
+  }
+
+  /* Prueba cada servidor una sola vez y devuelve los datos del primero
+     que responda. Lanza si todos fallan (una vuelta completa). */
+  async function consultarOverpass(consulta) {
+    const servidores = servidoresEnOrden();
+    let ultimoError = null;
+    for (let i = 0; i < servidores.length; i += 1) {
+      const url = servidores[i];
+      decir("Buscando… (intento " + (i + 1) + " de " + servidores.length + ")");
+      try {
+        const respuesta = await fetchConTimeout(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "data=" + encodeURIComponent(consulta)
+        });
+        if (!respuesta.ok) {
+          const transitorio = CODIGOS_REINTENTABLES.indexOf(respuesta.status) !== -1 || respuesta.status >= 500;
+          console.warn("Overpass " + url + " respondió " + respuesta.status + (transitorio ? " (temporal)" : ""));
+          throw new Error("HTTP " + respuesta.status);
+        }
+        const datos = await respuesta.json();
+        recordarServidor(url);
+        return datos;
+      } catch (error) {
+        ultimoError = error;
+        if (error && error.name === "AbortError") {
+          console.warn("Overpass " + url + " tardó demasiado.");
+          ultimoError = new Error("Tiempo de espera agotado");
+        } else {
+          console.warn("Overpass " + url + " falló:", error && error.message ? error.message : error);
+        }
+      }
+    }
+    throw ultimoError || new Error("Sin servidores disponibles");
+  }
+
+  async function buscarAlrededor(lat, lon) {
+    ultimaBusqueda = { tipo: "aqui", lat, lon };
+    const firma = firmaZona(lat, lon);
+    try {
+      const datos = await consultarOverpass(construirConsulta(lat, lon));
+      const puntos = extraerPuntos(datos);
+      guardarCacheZona(firma, puntos);
+      pintar(puntos, [lat, lon]);
+    } catch (error) {
+      const guardados = leerCacheZona(firma);
+      if (guardados) {
+        pintar(guardados, [lat, lon]);
+        decir("Mostrando resultados guardados, puede que no estén actualizados.");
+      } else {
+        decir(mensajeDeFallo(), true);
+      }
+    }
+  }
+
+  async function buscarLugar(texto) {
+    ultimaBusqueda = { tipo: "lugar", texto };
+    decir("Buscando ese lugar…");
+    try {
+      const respuesta = await fetchConTimeout(NOMINATIM + "?format=json&limit=1&q=" + encodeURIComponent(texto), {});
+      if (!respuesta.ok) throw new Error("HTTP " + respuesta.status);
+      const sitios = await respuesta.json();
+      if (!Array.isArray(sitios) || !sitios.length) {
+        decir("No encontré ese lugar.", true);
+        return;
+      }
+      await buscarAlrededor(Number(sitios[0].lat), Number(sitios[0].lon));
+    } catch (error) {
+      console.warn("Nominatim falló:", error && error.message ? error.message : error);
+      decir(mensajeDeFallo(), true);
+    }
   }
 
   if (botonAqui) {
@@ -119,11 +278,7 @@
       }
       decir("Pidiendo tu ubicación…");
       navigator.geolocation.getCurrentPosition(async (posicion) => {
-        try {
-          await buscarAlrededor(posicion.coords.latitude, posicion.coords.longitude);
-        } catch (error) {
-          decir(error.message || "No se pudo buscar en el mapa.", true);
-        }
+        await buscarAlrededor(posicion.coords.latitude, posicion.coords.longitude);
       }, () => {
         decir("No hay permiso de ubicación. Escribe una dirección o una ciudad.", true);
       }, { enableHighAccuracy: true, timeout: 10000 });
@@ -131,25 +286,21 @@
   }
 
   if (botonLugar && campo) {
-    botonLugar.addEventListener("click", async () => {
+    botonLugar.addEventListener("click", () => {
       const texto = campo.value.trim();
       if (!texto) {
         decir("Escribe una ciudad o una dirección.", true);
         return;
       }
-      decir("Buscando ese lugar…");
-      try {
-        const respuesta = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(texto));
-        if (!respuesta.ok) throw new Error("No se pudo buscar el lugar.");
-        const sitios = await respuesta.json();
-        if (!sitios.length) {
-          decir("No encontré ese lugar.", true);
-          return;
-        }
-        await buscarAlrededor(Number(sitios[0].lat), Number(sitios[0].lon));
-      } catch (error) {
-        decir(error.message || "No se pudo buscar el lugar.", true);
-      }
+      buscarLugar(texto);
+    });
+  }
+
+  if (botonReintentar) {
+    botonReintentar.addEventListener("click", () => {
+      if (!ultimaBusqueda) return;
+      if (ultimaBusqueda.tipo === "lugar") buscarLugar(ultimaBusqueda.texto);
+      else buscarAlrededor(ultimaBusqueda.lat, ultimaBusqueda.lon);
     });
   }
 })();
