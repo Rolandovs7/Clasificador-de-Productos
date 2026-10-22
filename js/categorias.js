@@ -3,7 +3,8 @@
    Son las 80 clases que distingue COCO-SSD. Cada una tiene:
      - clase:  etiqueta exacta que devuelve el detector (no se cambia).
      - nombre: nombre en español para la interfaz.
-     - icono:  icono de boxicons 2.1.4 (todos verificados en esa versión).
+     - icono:  icono de boxicons 2.1.4 (todos verificados en esa versión) o un
+               SVG propio con el prefijo "svg:" (ver ICONOS_SVG).
      - color:  color propio, visible en tema claro y oscuro.
      - activa: si viene marcada por defecto.
 
@@ -11,8 +12,14 @@
    clases (por ejemplo animales o comidas), así que se elige el más cercano.
    El color y el nombre permiten distinguirlas.
    ========================================================================== */
+/* Dibujos propios que Boxicons no tiene. Se referencian con "svg:<clave>".
+   Heredan el color con currentColor y el tamaño del contenedor. */
+window.ICONOS_SVG = {
+  botella: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 2h3v3c0 1.5 2.5 2.3 2.5 5v9a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-9c0-2.7 2.5-3.5 2.5-5V2z"/><path d="M8 14h8"/></svg>'
+};
+
 window.CATEGORIAS = [
-  { clase: "bottle", nombre: "Botella", icono: "bx-drink", color: "#2DD4A0", activa: true },
+  { clase: "bottle", nombre: "Botella", icono: "svg:botella", color: "#2DD4A0", activa: true },
   { clase: "person", nombre: "Persona", icono: "bx-user", color: "#D85A9E", activa: false },
   { clase: "bicycle", nombre: "Bicicleta", icono: "bx-cycling", color: "#79D85A", activa: false },
   { clase: "car", nombre: "Coche", icono: "bx-car", color: "#5F5AD8", activa: false },
@@ -102,3 +109,15 @@ window.CATEGORIAS.forEach((categoria) => {
 window.CLASES_ACTIVAS_POR_DEFECTO = window.CATEGORIAS
   .filter((categoria) => categoria.activa)
   .map((categoria) => categoria.clase);
+
+/* Devuelve el HTML del icono de una clase: un SVG propio si el catálogo usa
+   "svg:<clave>", o el <i> de Boxicons en cualquier otro caso. */
+window.iconoCategoria = function (clase) {
+  const categoria = window.CATEGORIA_POR_CLASE[clase];
+  const nombre = categoria && categoria.icono ? categoria.icono : "bx-box";
+  if (nombre.indexOf("svg:") === 0) {
+    const svg = window.ICONOS_SVG[nombre.slice(4)];
+    if (svg) return svg.replace("<svg ", '<svg width="1em" height="1em" ');
+  }
+  return '<i class="bx ' + nombre + '" aria-hidden="true"></i>';
+};

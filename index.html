@@ -747,7 +747,6 @@
               clase,
               nombre: valor.nombre || (cat ? cat.nombre : clase),
               total: Number(valor.total) || 0,
-              icono: cat ? cat.icono : "bx-box",
               color: cat ? cat.color : "#2DD4A0"
             });
           }
@@ -775,7 +774,7 @@
             const icono = document.createElement("span");
             icono.className = "categoria-icono";
             icono.style.setProperty("--cat", fila.color);
-            icono.innerHTML = '<i class="bx ' + fila.icono + '" aria-hidden="true"></i>';
+            icono.innerHTML = iconoCategoria(fila.clase);
             const info = document.createElement("div");
             info.className = "categoria-info";
             const titulo = document.createElement("strong");
@@ -831,10 +830,11 @@
             const tip = document.createElement("span");
             tip.className = "barra-tip";
             tip.textContent = fila.nombre + " · " + fila.total;
-            const etiqueta = document.createElement("i");
-            etiqueta.className = "bx " + fila.icono + " barra-dia";
+            const etiqueta = document.createElement("span");
+            etiqueta.className = "barra-dia icono-cat";
             etiqueta.style.color = fila.color;
             etiqueta.setAttribute("aria-hidden", "true");
+            etiqueta.innerHTML = iconoCategoria(fila.clase);
             barra.append(tip, pista, etiqueta);
             cont.append(barra);
           });
@@ -1190,7 +1190,9 @@
 
         function rejectUnsupportedImage(personDetected) {
           resetResult();
-          elements.resultIcon.innerHTML = `<i class="bx ${personDetected ? "bx-user" : "bx-search-alt-2"}"></i>`;
+          elements.resultIcon.innerHTML = personDetected
+            ? iconoCategoria("person")
+            : '<i class="bx bx-search-alt-2" aria-hidden="true"></i>';
           elements.resultLabel.textContent = personDetected ? "Solo salió una persona" : "No encontramos productos";
           elements.confidence.textContent = personDetected
             ? "La persona no cuenta como producto. Activa esa categoría en Ajustes si la quieres."
@@ -1650,10 +1652,11 @@
             const chip = document.createElement("span");
             chip.className = "conteo-chip conteo-cat";
             chip.style.borderColor = color + "66";
-            const icono = document.createElement("i");
-            icono.className = "bx " + (cat ? cat.icono : "bx-box");
+            const icono = document.createElement("span");
+            icono.className = "conteo-cat-icono icono-cat";
             icono.style.color = color;
             icono.setAttribute("aria-hidden", "true");
+            icono.innerHTML = iconoCategoria(clase);
             const fuerte = document.createElement("strong");
             fuerte.textContent = String(cantidad);
             const nombre = document.createElement("span");
@@ -2076,7 +2079,7 @@
             ficha.style.borderColor = color + "55";
             ficha.style.background = `radial-gradient(circle at 50% 30%, ${color}40, ${color}10)`;
             ficha.setAttribute("aria-hidden", "true");
-            ficha.innerHTML = `<i class="bx ${cat ? cat.icono : "bx-box"}"></i>`;
+            ficha.innerHTML = iconoCategoria(clase);
             const description = document.createElement("div");
             const title = document.createElement("strong");
             title.textContent = item.categoria || nombreDe(clase);
@@ -2329,10 +2332,11 @@
             mostradas += 1;
             const li = document.createElement("li");
             li.className = "ajustes-fila";
-            const icono = document.createElement("i");
-            icono.className = "bx " + cat.icono;
+            const icono = document.createElement("span");
+            icono.className = "ajustes-icono icono-cat";
             icono.style.color = cat.color;
             icono.setAttribute("aria-hidden", "true");
+            icono.innerHTML = iconoCategoria(cat.clase);
             const nombre = document.createElement("span");
             nombre.className = "ajustes-nombre";
             nombre.textContent = cat.nombre;

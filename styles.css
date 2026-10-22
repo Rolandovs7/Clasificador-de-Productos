@@ -888,6 +888,13 @@ body.sin-scroll { overflow: hidden; }
   color: var(--acento-tinta);
   background-image: var(--degradado);
 }
+/* Icono de categoría: sirve tanto para Boxicons (<i>) como para el SVG
+   propio (width/height 1em). Hereda color y tamaño del contenedor. */
+.icono-cat { display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+.icono-cat svg, .categoria-icono svg, .ficha svg, .resultado-icono svg { display: block; width: 1em; height: 1em; }
+.conteo-cat .icono-cat { font-size: 1.05rem; }
+.ajustes-fila > .icono-cat { font-size: 1.25rem; flex: none; }
+
 .categoria-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .categoria-info strong { font-size: .95rem; }
 .categoria-info small { color: var(--texto-2); font-size: .76rem; }
