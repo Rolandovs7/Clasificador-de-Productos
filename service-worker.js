@@ -3,7 +3,7 @@
  * La carcasa se guarda al instalar y los CDN se reutilizan si ya se visitaron.
  * model.json y los dos .bin ya están entrenados y entran en la carcasa.
  */
-const SHELL_CACHE = "clasificador-shell-v18";
+const SHELL_CACHE = "clasificador-shell-v19";
 const EXTERNAL_CACHE = "clasificador-external-v1";
 const APP_FILES = [
   "./",

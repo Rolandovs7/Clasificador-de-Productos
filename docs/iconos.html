@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es" data-tema="oscuro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Revisión de iconos — Clasificador</title>
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <style>
+    /* Mismas variables de color que styles.css */
+    :root {
+      color-scheme: dark;
+
+      --fondo: #070B10;
+      --fondo-2: #0B0F14;
+      --superficie: #131A22;
+      --superficie-2: #1B242E;
+
+      --texto: #E8EEF4;
+      --texto-2: #93A2B4;
+
+      --acento: #2DD4A0;
+      --acento-2: #38BDF8;
+      --violeta: #8B5CF6;
+      --acento-tinta: #04130E;
+
+      --alerta: #F5B942;
+      --error: #F2555A;
+
+      --borde: rgba(255, 255, 255, .09);
+      --borde-fuerte: rgba(255, 255, 255, .18);
+
+      --glass: rgba(19, 26, 34, .60);
+      --glass-2: rgba(27, 36, 46, .55);
+      --glass-brillo: rgba(255, 255, 255, .08);
+      --relleno-suave: rgba(255, 255, 255, .045);
+      --relleno-suave-2: rgba(255, 255, 255, .07);
+      --campo: rgba(0, 0, 0, .26);
+      --pista: rgba(255, 255, 255, .07);
+      --puntos: rgba(255, 255, 255, .05);
+      --onda: rgba(255, 255, 255, .35);
+      --esqueleto-bg: rgba(7, 11, 16, .55);
+      --spark-area: rgba(45, 212, 160, .16);
+
+      --glow-a: rgba(45, 212, 160, .22);
+      --glow-b: rgba(56, 189, 248, .18);
+      --glow-c: rgba(139, 92, 246, .14);
+
+      --sombra: 0 18px 40px rgba(0, 0, 0, .45);
+      --sombra-fuerte: 0 30px 70px rgba(0, 0, 0, .6);
+      --sombra-acento: 0 16px 34px rgba(45, 212, 160, .38);
+
+      --degradado: linear-gradient(120deg, var(--acento), var(--acento-2));
+      --radio: 18px;
+      --radio-chico: 13px;
+      --radio-lg: 26px;
+      --transicion: 170ms ease;
+      --marca-alto: 58px;
+      --barra-alto: 66px;
+
+      --fuente-titulo: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+      --fuente-texto: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    [data-tema="claro"] {
+      color-scheme: light;
+
+      --fondo: #E9EFF6;
+      --fondo-2: #F5F8FC;
+      --superficie: #FFFFFF;
+      --superficie-2: #E7EEF6;
+
+      --texto: #0E1B25;
+      --texto-2: #56697A;
+
+      --acento: #0E9E76;
+      --acento-2: #0E8FB8;
+      --violeta: #7C3AED;
+      --acento-tinta: #01241A;
+
+      --borde: rgba(9, 26, 38, .12);
+      --borde-fuerte: rgba(9, 26, 38, .22);
+
+      --glass: rgba(255, 255, 255, .68);
+      --glass-2: rgba(255, 255, 255, .55);
+      --glass-brillo: rgba(255, 255, 255, .9);
+      --relleno-suave: rgba(9, 26, 38, .04);
+      --relleno-suave-2: rgba(9, 26, 38, .06);
+      --campo: rgba(9, 26, 38, .05);
+      --pista: rgba(9, 26, 38, .08);
+      --puntos: rgba(9, 26, 38, .08);
+      --onda: rgba(9, 26, 38, .12);
+      --esqueleto-bg: rgba(255, 255, 255, .6);
+      --spark-area: rgba(14, 158, 118, .16);
+
+      --glow-a: rgba(14, 158, 118, .18);
+      --glow-b: rgba(14, 143, 184, .14);
+      --glow-c: rgba(124, 58, 237, .10);
+
+      --sombra: 0 16px 36px rgba(24, 52, 72, .14);
+      --sombra-fuerte: 0 28px 64px rgba(24, 52, 72, .22);
+      --sombra-acento: 0 16px 34px rgba(14, 158, 118, .3);
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--fondo-2);
+      color: var(--texto);
+      font-family: var(--fuente-texto);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    .envoltorio {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: clamp(18px, 4vw, 40px);
+    }
+
+    .cabecera {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .cabecera h1 {
+      margin: 0 0 6px;
+      font-family: var(--fuente-titulo);
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      letter-spacing: -.02em;
+    }
+
+    .cabecera p {
+      margin: 0;
+      color: var(--texto-2);
+      font-size: .9rem;
+    }
+
+    .cabecera code {
+      font-size: .82em;
+      background: var(--relleno-suave);
+      border: 1px solid var(--borde);
+      border-radius: 6px;
+      padding: 1px 5px;
+    }
+
+    #tema {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 9px 16px;
+      border: 1px solid var(--borde-fuerte);
+      border-radius: 999px;
+      background: var(--superficie);
+      color: var(--texto);
+      font: inherit;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: border-color var(--transicion), background-color var(--transicion), color var(--transicion);
+    }
+
+    #tema:hover { border-color: var(--acento); }
+    #tema:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+    #tema i { font-size: 1.1rem; color: var(--acento); }
+
+    .rejilla {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .icono-item {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 18px 10px 13px;
+      text-align: center;
+      background: var(--superficie);
+      border: 1px solid var(--borde);
+      border-radius: var(--radio-chico);
+    }
+
+    .icono-item::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: var(--cat, var(--acento));
+    }
+
+    .icono-caja {
+      width: 50px;
+      height: 50px;
+      margin-bottom: 3px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      color: var(--acento-tinta);
+      background-image: var(--degradado);
+    }
+
+    .icono-caja svg { display: block; width: 1em; height: 1em; }
+    .icono-caja .bx { font-size: 1em; line-height: 1; }
+
+    .icono-item strong {
+      font-size: .9rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .icono-item code {
+      font-size: .72rem;
+      color: var(--texto-2);
+      word-break: break-word;
+    }
+
+    .icono-item .icono-ref {
+      font-size: .66rem;
+      color: var(--texto-2);
+      opacity: .8;
+      word-break: break-word;
+    }
+
+    @media (max-width: 420px) {
+      .rejilla { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+      .icono-caja { width: 44px; height: 44px; font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="envoltorio">
+    <header class="cabecera">
+      <div>
+        <h1>Revisión de iconos</h1>
+        <p>
+          <span id="total">80</span> categorías de COCO-SSD · iconos dibujados con
+          <code>window.iconoCategoria()</code>
+        </p>
+      </div>
+      <button id="tema" type="button" aria-pressed="false">
+        <i class="bx bx-moon" aria-hidden="true"></i>
+        <span>Tema claro</span>
+      </button>
+    </header>
+
+    <main>
+      <ul id="rejilla" class="rejilla" aria-label="Cuadrícula de iconos por categoría"></ul>
+    </main>
+  </div>
+
+  <script src="../js/categorias.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var rejilla = document.getElementById("rejilla");
+      var total = document.getElementById("total");
+      var boton = document.getElementById("tema");
+      var iconoBoton = boton.querySelector("i");
+      var etiquetaBoton = boton.querySelector("span");
+      var raiz = document.documentElement;
+
+      var catalogo = window.CATEGORIAS || [];
+      var trozo = document.createDocumentFragment();
+
+      catalogo.forEach(function (categoria) {
+        var item = document.createElement("li");
+        item.className = "icono-item";
+        item.style.setProperty("--cat", categoria.color);
+
+        var caja = document.createElement("span");
+        caja.className = "icono-caja";
+        caja.innerHTML = window.iconoCategoria(categoria.clase);
+
+        var nombre = document.createElement("strong");
+        nombre.textContent = categoria.nombre;
+
+        var clase = document.createElement("code");
+        clase.textContent = categoria.clase;
+
+        var referencia = document.createElement("span");
+        referencia.className = "icono-ref";
+        referencia.textContent = categoria.icono;
+
+        item.append(caja, nombre, clase, referencia);
+        trozo.append(item);
+      });
+
+      rejilla.append(trozo);
+      total.textContent = String(catalogo.length);
+
+      function aplicarTema(tema) {
+        raiz.dataset.tema = tema;
+        var claro = tema === "claro";
+        boton.setAttribute("aria-pressed", String(claro));
+        iconoBoton.className = "bx " + (claro ? "bx-sun" : "bx-moon");
+        etiquetaBoton.textContent = claro ? "Tema oscuro" : "Tema claro";
+      }
+
+      aplicarTema("oscuro");
+
+      boton.addEventListener("click", function () {
+        aplicarTema(raiz.dataset.tema === "claro" ? "oscuro" : "claro");
+      });
+    })();
+  </script>
+</body>
+</html>
